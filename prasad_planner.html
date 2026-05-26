@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Prasad Menu – Ingredient Planner</title>
+<style>
+  :root {
+    --primary: #8B1A1A;
+    --primary-dark: #6B1010;
+    --accent: #E8820C;
+    --teal: #1A7A6E;
+    --bg: #F5F0EB;
+    --card: #FFFFFF;
+    --text: #1A1A1A;
+    --muted: #6B6B6B;
+    --border: #E0D8D0;
+    --row-alt: #FBF7F2;
+    --shadow: 0 2px 12px rgba(0,0,0,0.10);
+    --radius: 14px;
+    --header-h: 56px;
+    --tab-h: 60px;
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); overscroll-behavior: none; }
+  body { display: flex; flex-direction: column; }
+
+  /* HEADER */
+  .app-header {
+    background: var(--primary);
+    color: #fff;
+    padding: 0 16px;
+    height: var(--header-h);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    flex-shrink: 0;
+  }
+  .app-header h1 { font-size: 17px; font-weight: 700; }
+  .app-header .subtitle { font-size: 11px; opacity: 0.75; margin-top: 1px; }
+  .header-left { display: flex; flex-direction: column; }
+  .people-badge {
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 20px; padding: 4px 10px 4px 6px;
+  }
+  .people-badge label { font-size: 11px; opacity: 0.85; white-space: nowrap; }
+  .people-badge input {
+    width: 52px; background: rgba(255,255,255,0.9);
+    border: none; border-radius: 12px; color: var(--primary);
+    font-size: 15px; font-weight: 700; text-align: center; padding: 2px 4px; outline: none;
+  }
+
+  /* BODY */
+  .app-body { flex: 1; overflow-y: auto; overflow-x: hidden; padding-bottom: calc(var(--tab-h) + var(--safe-bottom) + 8px); }
+
+  /* TABS */
+  .tab-bar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    height: calc(var(--tab-h) + var(--safe-bottom));
+    background: #fff; border-top: 1px solid var(--border);
+    display: flex; z-index: 100;
+    padding-bottom: var(--safe-bottom);
+    box-shadow: 0 -2px 12px rgba(0,0,0,0.08);
+  }
+  .tab-btn {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 3px;
+    background: none; border: none; color: var(--muted);
+    font-size: 10px; font-weight: 500; cursor: pointer;
+    transition: color 0.2s; padding-top: 6px;
+  }
+  .tab-btn.active { color: var(--primary); }
+  .tab-btn svg { width: 22px; height: 22px; }
+
+  /* VIEWS */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* LOADING / ERROR screens */
+  .splash {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; padding: 60px 24px; text-align: center; gap: 16px;
+  }
+  .splash .icon { font-size: 52px; }
+  .splash h2 { font-size: 18px; font-weight: 700; }
+  .splash p { font-size: 14px; color: var(--muted); line-height: 1.6; }
+  .splash code {
+    display: block; background: #1e1e1e; color: #4FC3F7;
+    padding: 10px 16px; border-radius: 8px; font-size: 13px;
+    margin: 4px 0; font-family: monospace; text-align: left; word-break: break-all;
+  }
+  .spinner {
+    width: 44px; height: 44px;
+    border: 4px solid rgba(139,26,26,0.2);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* FILE PICKER (fallback for file://) */
+  .file-picker-area {
+    border: 2px dashed var(--border); border-radius: var(--radius);
+    padding: 24px; text-align: center; cursor: pointer;
+    transition: border-color 0.2s; margin: 16px;
+  }
+  .file-picker-area:hover { border-color: var(--primary); }
+  .file-picker-area input { display: none; }
+  .btn-primary {
+    display: inline-block; padding: 10px 24px;
+    background: var(--primary); color: #fff;
+    border: none; border-radius: 24px;
+    font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 10px;
+  }
+  .btn-primary:active { background: var(--primary-dark); }
+
+  /* MENU VIEW */
+  .menu-toolbar {
+    background: #fff; border-bottom: 1px solid var(--border);
+    padding: 10px 16px; display: flex; gap: 8px; align-items: center;
+    position: sticky; top: var(--header-h); z-index: 50;
+  }
+  .btn-sm {
+    padding: 6px 14px; border-radius: 20px;
+    border: 1.5px solid var(--primary); background: #fff;
+    color: var(--primary); font-size: 13px; font-weight: 600; cursor: pointer;
+  }
+  .btn-sm:active { background: var(--primary); color: #fff; }
+  .btn-sm.filled { background: var(--primary); color: #fff; }
+  .menu-stats { margin-left: auto; font-size: 12px; color: var(--muted); white-space: nowrap; }
+
+  .category-block { margin: 12px 12px 0; }
+  .category-block:last-child { margin-bottom: 12px; }
+  .category-header {
+    display: flex; align-items: center;
+    padding: 10px 14px; background: var(--primary);
+    color: #fff; border-radius: var(--radius) var(--radius) 0 0;
+    cursor: pointer; user-select: none; gap: 8px;
+  }
+  .category-header.collapsed { border-radius: var(--radius); }
+  .category-name { font-weight: 700; font-size: 14px; flex: 1; }
+  .cat-btns { display: flex; gap: 5px; }
+  .cat-btn {
+    padding: 3px 9px; border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.5);
+    background: rgba(255,255,255,0.15);
+    color: #fff; font-size: 11px; font-weight: 600; cursor: pointer;
+  }
+  .cat-btn:active { background: rgba(255,255,255,0.35); }
+  .cat-count {
+    background: rgba(255,255,255,0.25); border-radius: 10px;
+    padding: 2px 8px; font-size: 11px; font-weight: 700;
+    min-width: 28px; text-align: center;
+  }
+  .chevron { transition: transform 0.25s; font-size: 13px; }
+  .chevron.open { transform: rotate(90deg); }
+  .category-items {
+    background: var(--card); border-radius: 0 0 var(--radius) var(--radius);
+    overflow: hidden; border: 1px solid var(--border); border-top: none;
+  }
+  .category-items.collapsed { display: none; }
+  .dish-item {
+    display: flex; align-items: center;
+    padding: 12px 14px; border-bottom: 1px solid var(--border);
+    gap: 12px; transition: background 0.1s;
+  }
+  .dish-item:last-child { border-bottom: none; }
+  .dish-item:active { background: var(--row-alt); }
+  .dish-check {
+    width: 22px; height: 22px; border-radius: 6px;
+    border: 2px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: all 0.15s; background: #fff;
+  }
+  .dish-item.selected .dish-check { background: var(--primary); border-color: var(--primary); }
+  .dish-check svg { display: none; }
+  .dish-item.selected .dish-check svg { display: block; }
+  .dish-name { font-size: 15px; font-weight: 500; flex: 1; }
+  .dish-count-badge {
+    font-size: 11px; color: var(--muted);
+    background: var(--row-alt); padding: 2px 8px; border-radius: 10px;
+  }
+
+  /* SHOPPING LIST */
+  .list-toolbar {
+    background: #fff; border-bottom: 1px solid var(--border);
+    padding: 10px 12px; display: flex; flex-direction: column; gap: 8px;
+    position: sticky; top: var(--header-h); z-index: 50;
+  }
+  .list-toolbar-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .unit-seg {
+    display: flex; background: var(--bg);
+    border-radius: 20px; border: 1.5px solid var(--border); overflow: hidden;
+  }
+  .unit-seg button {
+    padding: 6px 12px; border: none; background: transparent;
+    font-size: 12px; font-weight: 600; color: var(--muted); cursor: pointer;
+  }
+  .unit-seg button.active { background: var(--primary); color: #fff; border-radius: 18px; }
+  .summary-pill {
+    background: var(--primary); color: #fff;
+    border-radius: 20px; padding: 5px 12px;
+    font-size: 11px; font-weight: 600; flex-shrink: 0;
+  }
+  .pdf-btn {
+    margin-left: auto; padding: 7px 14px;
+    background: var(--accent); color: #fff;
+    border: none; border-radius: 20px;
+    font-size: 12px; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; gap: 5px; flex-shrink: 0;
+  }
+  .pdf-btn:active { background: #c06a08; }
+
+  /* ── PDF MODAL ── */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,0.55);
+    display: flex; align-items: flex-end;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.25s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal-sheet {
+    width: 100%; background: #fff;
+    border-radius: 20px 20px 0 0;
+    padding: 20px 20px calc(20px + var(--safe-bottom));
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(.32,1,.23,1);
+    box-shadow: 0 -4px 24px rgba(0,0,0,0.15);
+  }
+  .modal-overlay.open .modal-sheet { transform: translateY(0); }
+  .modal-handle {
+    width: 40px; height: 4px; background: #ddd;
+    border-radius: 2px; margin: 0 auto 18px;
+  }
+  .modal-title { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+  .modal-sub   { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
+  .modal-input {
+    width: 100%; padding: 12px 14px;
+    border: 2px solid var(--border); border-radius: 12px;
+    font-size: 16px; outline: none; transition: border-color 0.2s;
+    background: var(--bg);
+  }
+  .modal-input:focus { border-color: var(--primary); background: #fff; }
+  .modal-actions { display: flex; gap: 10px; margin-top: 14px; }
+  .modal-cancel {
+    flex: 1; padding: 12px; border: 1.5px solid var(--border);
+    background: #fff; border-radius: 12px; font-size: 15px;
+    font-weight: 600; cursor: pointer; color: var(--muted);
+  }
+  .modal-go {
+    flex: 2; padding: 12px; background: var(--primary);
+    color: #fff; border: none; border-radius: 12px;
+    font-size: 15px; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .modal-go:disabled { background: #bbb; cursor: default; }
+  .modal-go:active:not(:disabled) { background: var(--primary-dark); }
+
+  /* result card inside modal */
+  .result-card {
+    margin-top: 14px; border-radius: 12px;
+    background: #f0faf4; border: 1.5px solid #b2dfc5;
+    padding: 14px; display: none;
+  }
+  .result-card.show { display: block; }
+  .result-card h4 { font-size: 13px; font-weight: 700; color: #1A6B3A; margin-bottom: 8px; }
+  .url-row {
+    display: flex; align-items: center; gap: 8px;
+    background: #fff; border: 1px solid #ddd;
+    border-radius: 8px; padding: 8px 10px; margin-bottom: 6px;
+  }
+  .url-label { font-size: 10px; font-weight: 700; color: var(--muted); min-width: 42px; }
+  .url-text  { font-size: 11px; color: #1A5A8B; flex: 1; word-break: break-all; font-family: monospace; }
+  .copy-btn  {
+    padding: 4px 8px; background: var(--primary); color: #fff;
+    border: none; border-radius: 6px; font-size: 11px; font-weight: 600;
+    cursor: pointer; flex-shrink: 0;
+  }
+  .copy-btn:active { background: var(--primary-dark); }
+  .gen-spinner {
+    display: none; width: 18px; height: 18px;
+    border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff;
+    border-radius: 50%; animation: spin 0.7s linear infinite;
+  }
+  .no-selection { text-align: center; padding: 60px 20px; color: var(--muted); }
+  .no-selection .icon { font-size: 48px; margin-bottom: 12px; }
+  .no-selection p { font-size: 15px; }
+
+  .combined-header {
+    background: #2C3E50; color: #fff;
+    padding: 10px 14px; font-weight: 700; font-size: 14px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .combined-stats { font-size: 11px; font-weight: 400; opacity: 0.8; margin-left: auto; text-align: right; }
+  .dish-section-header {
+    color: #fff; padding: 8px 14px;
+    font-weight: 700; font-size: 13px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .ing-count { font-size: 11px; font-weight: 500; opacity: 0.8; margin-left: auto; }
+
+  .table-header-row {
+    display: grid; color: #fff;
+    font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.3px;
+    background: #3D5166;
+  }
+  .table-header-row.both    { grid-template-columns: 24px 1fr 62px 38px 62px 38px 80px; }
+  .table-header-row.imperial{ grid-template-columns: 24px 1fr 80px 48px 80px; }
+  .table-header-row.metric  { grid-template-columns: 24px 1fr 80px 48px 80px; }
+  .th { padding: 7px 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .th-imp { background: rgba(231,131,12,0.3); }
+  .th-met { background: rgba(26,122,110,0.3); }
+
+  .ing-row { display: grid; align-items: center; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .ing-row.both    { grid-template-columns: 24px 1fr 62px 38px 62px 38px 80px; }
+  .ing-row.imperial{ grid-template-columns: 24px 1fr 80px 48px 80px; }
+  .ing-row.metric  { grid-template-columns: 24px 1fr 80px 48px 80px; }
+  .ing-row:nth-child(even) { background: var(--row-alt); }
+  .td { padding: 8px 5px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .td-num { font-weight: 600; color: var(--muted); font-size: 11px; text-align: center; }
+  .td-qty-imp { color: var(--accent); font-weight: 700; text-align: right; }
+  .td-qty-met { color: var(--teal); font-weight: 700; text-align: right; }
+  .td-unit { color: var(--muted); font-size: 11px; }
+  .td-used { color: var(--muted); font-size: 11px; }
+
+  .section-block { margin: 10px 10px 0; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+  .section-block:last-child { margin-bottom: 10px; }
+
+  @media print {
+    .app-header, .tab-bar, .menu-toolbar, .list-toolbar, .pdf-btn { display: none !important; }
+    body { background: #fff; }
+    .app-body { overflow: visible; padding: 0; }
+    #view-menu { display: none !important; }
+    #view-list { display: block !important; }
+    .section-block { page-break-inside: avoid; box-shadow: none; border: 1px solid #ccc; margin: 6px 0; }
+    .ing-row { font-size: 11px; }
+    @page { margin: 1cm; size: A4; }
+  }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="header-left">
+    <h1>🍛 Prasad Menu</h1>
+    <div class="subtitle">Ingredient Planner</div>
+  </div>
+  <div class="people-badge">
+    <label>People:</label>
+    <input type="number" id="people-input" value="200" min="1" max="10000">
+  </div>
+</header>
+
+<div class="app-body">
+  <!-- LOADING SCREEN -->
+  <div class="view active" id="view-loading">
+    <div class="splash">
+      <div class="spinner"></div>
+      <h2>Loading Dishes…</h2>
+      <p>Reading CSV files from the dishes/ folder</p>
+    </div>
+  </div>
+
+  <!-- FILE:// ERROR SCREEN -->
+  <div class="view" id="view-error">
+    <div class="splash">
+      <div class="icon">⚠️</div>
+      <h2>Open via a local server</h2>
+      <p>Browsers block CSV files from being read when you open HTML directly from disk.<br><br>
+      Run this one command in Terminal from your <strong>Prasad</strong> folder:</p>
+      <code>cd ~/Documents/Claude/Projects/Prasad</code>
+      <code>python3 -m http.server 8080</code>
+      <p>Then open <strong>http://localhost:8080/prasad_planner.html</strong> in your browser.</p>
+      <p style="margin-top:12px; font-size:13px; color:var(--muted)">
+        — or — select all your CSV files manually:
+      </p>
+    </div>
+    <div class="file-picker-area" id="picker-area" onclick="document.getElementById('csv-files').click()">
+      <div style="font-size:32px">📂</div>
+      <p style="font-size:14px; margin:8px 0; color:var(--muted)">Tap to select all CSV files<br>(menu.csv + all files in dishes/ folder)</p>
+      <button class="btn-primary">Choose CSV Files</button>
+      <input type="file" id="csv-files" accept=".csv" multiple>
+    </div>
+  </div>
+
+  <!-- MENU VIEW -->
+  <div class="view" id="view-menu">
+    <div class="menu-toolbar">
+      <button class="btn-sm filled" onclick="selectAll()">Select All</button>
+      <button class="btn-sm" onclick="clearAll()">Clear All</button>
+      <span class="menu-stats" id="menu-stats">0 dishes selected</span>
+    </div>
+    <div id="menu-container"></div>
+  </div>
+
+  <!-- SHOPPING LIST VIEW -->
+  <div class="view" id="view-list">
+    <div class="list-toolbar">
+      <div class="list-toolbar-row">
+        <div class="unit-seg">
+          <button onclick="setUnit('both')" class="active" id="unit-both">Both</button>
+          <button onclick="setUnit('imperial')" id="unit-imperial">Imperial</button>
+          <button onclick="setUnit('metric')" id="unit-metric">Metric</button>
+        </div>
+        <span id="list-summary" class="summary-pill">0 dishes</span>
+        <button class="pdf-btn" onclick="openPdfModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Save Shopping List
+        </button>
+      </div>
+      <div class="list-toolbar-row">
+        <label style="font-size:12px; color:var(--muted)">Show:</label>
+        <label style="display:flex;align-items:center;gap:4px;font-size:12px">
+          <input type="checkbox" id="show-combined" checked onchange="renderList()"> Combined list
+        </label>
+        <label style="display:flex;align-items:center;gap:4px;font-size:12px">
+          <input type="checkbox" id="show-perdish" checked onchange="renderList()"> Per-dish
+        </label>
+      </div>
+    </div>
+    <div id="list-container"></div>
+  </div>
+</div>
+
+<!-- ─── PDF MODAL ─── -->
+<div class="modal-overlay" id="pdf-modal" onclick="modalBgClick(event)">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">💾 Save Shopping List</div>
+    <div class="modal-sub" id="modal-sub">Name your PDF — it will be saved to the PDF/ folder and a shareable link will be created.</div>
+    <input class="modal-input" id="pdf-name-input" type="text" placeholder="e.g. Prasad_June_2026" maxlength="80"
+      oninput="document.getElementById('modal-go-btn').disabled = !this.value.trim()"
+      onkeydown="if(event.key==='Enter' && this.value.trim()) generatePdf()">
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closePdfModal()">Cancel</button>
+      <button class="modal-go" id="modal-go-btn" onclick="generatePdf()" disabled>
+        <div class="gen-spinner" id="gen-spinner"></div>
+        <span id="go-label">Generate PDF →</span>
+      </button>
+    </div>
+    <div class="result-card" id="result-card">
+      <h4>✅ PDF saved!</h4>
+      <div class="url-row">
+        <span class="url-label">Local</span>
+        <span class="url-text" id="url-local"></span>
+        <button class="copy-btn" onclick="copyUrl('url-local')">Copy</button>
+      </div>
+      <div class="url-row">
+        <span class="url-label">Wi-Fi</span>
+        <span class="url-text" id="url-wifi"></span>
+        <button class="copy-btn" onclick="copyUrl('url-wifi')">Copy</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<nav class="tab-bar">
+  <button class="tab-btn" id="tab-menu" onclick="switchTab('menu')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+      <rect x="9" y="3" width="6" height="4" rx="1"/>
+      <path d="M9 12h6M9 16h4"/>
+    </svg>
+    Menu
+  </button>
+  <button class="tab-btn" id="tab-list" onclick="switchTab('list')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+      <line x1="3" y1="6" x2="21" y2="6"/>
+      <path d="M16 10a4 4 0 0 1-8 0"/>
+    </svg>
+    Shopping List
+  </button>
+</nav>
+
+<script>
+// ─── State ───────────────────────────────────────────────
+let DISHES    = {};   // { dishName: { category, file, ingredients:[{name,qty250,unit}] } }
+let MENU_ORDER = [];  // array of dish names in order from menu.csv
+let CATEGORIES = [];  // ordered unique categories
+let selected   = new Set();
+let unitMode   = 'both';
+let collapsed  = {};
+
+const CAT_COLORS = {
+  "Rice & Khichdi":        "#7B5E2A",
+  "Dal":                   "#8B3A0F",
+  "Sabji & Curries":       "#1A6B3A",
+  "Raita Salad & Chutney": "#1A5A8B",
+  "Sweets (Khiri & Halwa)":"#7B2A6B"
+};
+function catColor(cat) { return CAT_COLORS[cat] || '#8B1A1A'; }
+
+// ─── CSV parser ──────────────────────────────────────────
+function parseCSV(text) {
+  const lines = text.trim().split(/\r?\n/);
+  const headers = lines[0].split(',').map(h => h.trim());
+  return lines.slice(1).filter(l => l.trim()).map(line => {
+    // handle commas inside quoted fields
+    const vals = []; let cur = ''; let inQ = false;
+    for (let c of line) {
+      if (c === '"') { inQ = !inQ; }
+      else if (c === ',' && !inQ) { vals.push(cur.trim()); cur = ''; }
+      else cur += c;
+    }
+    vals.push(cur.trim());
+    const obj = {};
+    headers.forEach((h, i) => obj[h] = vals[i] ?? '');
+    return obj;
+  });
+}
+
+// ─── Load via fetch (http://) ────────────────────────────
+async function loadViaFetch() {
+  // Load menu.csv
+  const menuRes  = await fetch('menu.csv');
+  const menuText = await menuRes.text();
+  const menuRows = parseCSV(menuText);
+
+  // Extract ordered categories
+  const catSeen = new Set();
+  menuRows.forEach(r => { if (!catSeen.has(r.category)) { CATEGORIES.push(r.category); catSeen.add(r.category); } });
+
+  // Load each dish CSV in parallel
+  await Promise.all(menuRows.map(async row => {
+    const res  = await fetch('dishes/' + row.file);
+    const text = await res.text();
+    const ings = parseCSV(text).map(r => ({ name: r.ingredient, qty250: parseFloat(r.qty250), unit: r.unit }));
+    DISHES[row.dish] = { category: row.category, file: row.file, ingredients: ings };
+    MENU_ORDER.push(row.dish);
+  }));
+
+  // Keep MENU_ORDER in menu.csv order
+  MENU_ORDER = menuRows.map(r => r.dish);
+}
+
+// ─── Load via File picker (file://) ─────────────────────
+function loadViaFiles(files) {
+  return new Promise((resolve, reject) => {
+    const fileMap = {}; // name → File
+    for (const f of files) fileMap[f.name] = f;
+
+    const readFile = f => new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = e => res(e.target.result);
+      r.onerror = rej;
+      r.readAsText(f);
+    });
+
+    if (!fileMap['menu.csv']) { reject(new Error('menu.csv not found in selected files')); return; }
+
+    readFile(fileMap['menu.csv']).then(async menuText => {
+      const menuRows = parseCSV(menuText);
+      const catSeen = new Set();
+      menuRows.forEach(r => {
+        if (!catSeen.has(r.category)) { CATEGORIES.push(r.category); catSeen.add(r.category); }
+      });
+
+      for (const row of menuRows) {
+        const dishFile = fileMap[row.file];
+        if (!dishFile) { console.warn('Missing file:', row.file); continue; }
+        const text = await readFile(dishFile);
+        const ings = parseCSV(text).map(r => ({ name: r.ingredient, qty250: parseFloat(r.qty250), unit: r.unit }));
+        DISHES[row.dish] = { category: row.category, file: row.file, ingredients: ings };
+      }
+      MENU_ORDER = menuRows.map(r => r.dish);
+      resolve();
+    }).catch(reject);
+  });
+}
+
+// ─── Boot ────────────────────────────────────────────────
+async function boot() {
+  const isFileProtocol = window.location.protocol === 'file:';
+
+  if (!isFileProtocol) {
+    // Happy path: served via http, fetch CSVs directly
+    try {
+      await loadViaFetch();
+      showApp();
+    } catch (e) {
+      showError(`Failed to load CSV files: ${e.message}`);
+    }
+  } else {
+    // file:// → show instructions + file picker fallback
+    switchView('error');
+  }
+}
+
+function showApp() {
+  switchView('menu');
+  document.getElementById('tab-menu').classList.add('active');
+  renderMenu();
+}
+
+function showError(msg) {
+  document.querySelector('#view-error .splash h2').textContent = 'Load Error';
+  document.querySelector('#view-error .splash p').textContent  = msg;
+  switchView('error');
+}
+
+// File picker handler
+document.getElementById('csv-files').addEventListener('change', async function() {
+  if (!this.files.length) return;
+  try {
+    document.querySelector('#view-error .splash h2').textContent = 'Loading…';
+    await loadViaFiles(this.files);
+    showApp();
+  } catch (e) {
+    alert('Error loading files: ' + e.message);
+  }
+});
+
+// ─── View management ─────────────────────────────────────
+function switchView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  switchView(tab);
+  if (tab === 'list') renderList();
+}
+
+// ─── Unit mode ───────────────────────────────────────────
+function setUnit(mode) {
+  unitMode = mode;
+  ['both','imperial','metric'].forEach(m =>
+    document.getElementById('unit-' + m).classList.toggle('active', m === mode)
+  );
+  renderList();
+}
+
+// ─── Helpers ─────────────────────────────────────────────
+function fmtNum(n) {
+  if (n >= 100) return Math.round(n).toLocaleString();
+  if (n >= 10)  return +n.toFixed(1);
+  if (n >= 1)   return +n.toFixed(2);
+  return +n.toFixed(3);
+}
+function toMetric(qty, unit) {
+  if (unit === 'lb') {
+    const kg = qty * 0.453592;
+    return kg >= 1 ? { val: +kg.toFixed(3), unit: 'kg' } : { val: Math.round(kg * 1000), unit: 'g' };
+  }
+  if (unit === 'gallons') {
+    const L = qty * 3.78541;
+    return L >= 1 ? { val: +L.toFixed(3), unit: 'L' } : { val: Math.round(L * 1000), unit: 'mL' };
+  }
+  return { val: +qty.toFixed(2), unit };
+}
+function isConvertible(unit) { return unit === 'lb' || unit === 'gallons'; }
+function getPeople() { return parseInt(document.getElementById('people-input').value) || 200; }
+function calcQty(qty250, people) { return qty250 * people / 250; }
+
+// ─── Render Menu ─────────────────────────────────────────
+function renderMenu() {
+  const container = document.getElementById('menu-container');
+  container.innerHTML = '';
+
+  CATEGORIES.forEach(cat => {
+    const dishes = MENU_ORDER.filter(n => DISHES[n].category === cat);
+    const selCount = dishes.filter(n => selected.has(n)).length;
+    const isCollapsed = collapsed[cat];
+    const color = catColor(cat);
+
+    const block = document.createElement('div');
+    block.className = 'category-block';
+
+    const header = document.createElement('div');
+    header.className = 'category-header' + (isCollapsed ? ' collapsed' : '');
+    header.style.background = color;
+    header.innerHTML = `
+      <span class="category-name">${cat}</span>
+      <div class="cat-btns">
+        <button class="cat-btn" onclick="catAll('${cat}',event)">All</button>
+        <button class="cat-btn" onclick="catNone('${cat}',event)">None</button>
+      </div>
+      <span class="cat-count">${selCount}/${dishes.length}</span>
+      <span class="chevron ${isCollapsed ? '' : 'open'}">›</span>`;
+    header.onclick = e => {
+      if (e.target.classList.contains('cat-btn')) return;
+      collapsed[cat] = !collapsed[cat];
+      renderMenu();
+    };
+
+    const items = document.createElement('div');
+    items.className = 'category-items' + (isCollapsed ? ' collapsed' : '');
+
+    dishes.forEach(name => {
+      const dish = DISHES[name];
+      const isSel = selected.has(name);
+      const item = document.createElement('div');
+      item.className = 'dish-item' + (isSel ? ' selected' : '');
+      item.innerHTML = `
+        <div class="dish-check">
+          <svg viewBox="0 0 12 12" fill="none" width="12" height="12">
+            <polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <span class="dish-name">${name}</span>
+        <span class="dish-count-badge">${dish.ingredients.length} ing</span>`;
+      item.onclick = () => {
+        selected.has(name) ? selected.delete(name) : selected.add(name);
+        renderMenu();
+        updateMenuStats();
+      };
+      items.appendChild(item);
+    });
+
+    block.appendChild(header);
+    block.appendChild(items);
+    container.appendChild(block);
+  });
+  updateMenuStats();
+}
+
+function updateMenuStats() {
+  const n = selected.size;
+  document.getElementById('menu-stats').textContent = n === 1 ? '1 dish selected' : `${n} dishes selected`;
+}
+function catAll(cat, e)  { e.stopPropagation(); MENU_ORDER.filter(n => DISHES[n].category === cat).forEach(n => selected.add(n));    renderMenu(); }
+function catNone(cat, e) { e.stopPropagation(); MENU_ORDER.filter(n => DISHES[n].category === cat).forEach(n => selected.delete(n)); renderMenu(); }
+function selectAll() { MENU_ORDER.forEach(n => selected.add(n)); renderMenu(); }
+function clearAll()  { selected.clear(); renderMenu(); }
+
+// ─── Render Shopping List ────────────────────────────────
+function renderList() {
+  const people       = getPeople();
+  const showCombined = document.getElementById('show-combined').checked;
+  const showPerdish  = document.getElementById('show-perdish').checked;
+  const container    = document.getElementById('list-container');
+  const selDishes    = MENU_ORDER.filter(n => selected.has(n));
+
+  // summary pill
+  const totalIng = new Set();
+  selDishes.forEach(n => DISHES[n].ingredients.forEach(i => totalIng.add(i.name.toLowerCase())));
+  document.getElementById('list-summary').textContent =
+    `${selDishes.length} dish${selDishes.length !== 1 ? 'es' : ''} · ${totalIng.size} ingredients`;
+
+  if (selDishes.length === 0) {
+    container.innerHTML = `<div class="no-selection"><div class="icon">🛒</div><p>Select dishes from the Menu tab<br>to see your shopping list</p></div>`;
+    return;
+  }
+
+  let html = '';
+
+  if (showCombined) {
+    const combined = {};
+    selDishes.forEach(dishName => {
+      DISHES[dishName].ingredients.forEach(ing => {
+        const key = ing.name.toLowerCase();
+        if (!combined[key]) combined[key] = { name: ing.name, qty250: 0, unit: ing.unit, dishes: [] };
+        combined[key].qty250 += ing.qty250;
+        combined[key].dishes.push(dishName);
+      });
+    });
+    const rows = Object.values(combined).sort((a, b) => a.name.localeCompare(b.name));
+
+    html += `<div class="section-block">
+      <div class="combined-header">🛒 Combined Shopping List
+        <span class="combined-stats">${selDishes.length} dishes · ${rows.length} ingredients · ${people} people</span>
+      </div>
+      ${tableHeader()}`;
+    rows.forEach((ing, i) => {
+      const qty = calcQty(ing.qty250, people);
+      html += ingRow(i + 1, ing.name, fmtNum(qty), ing.unit, toMetric(qty, ing.unit), isConvertible(ing.unit), [...new Set(ing.dishes)].join(', '));
+    });
+    html += '</div>';
+  }
+
+  if (showPerdish) {
+    CATEGORIES.forEach(cat => {
+      selDishes.filter(n => DISHES[n].category === cat).forEach(dishName => {
+        const dish = DISHES[dishName];
+        html += `<div class="section-block">
+          <div class="dish-section-header" style="background:${catColor(cat)}">
+            ${dishName}
+            <span class="ing-count">${dish.ingredients.length} ingredients · ${people} people</span>
+          </div>
+          ${tableHeader()}`;
+        dish.ingredients.forEach((ing, i) => {
+          const qty = calcQty(ing.qty250, people);
+          html += ingRow(i + 1, ing.name, fmtNum(qty), ing.unit, toMetric(qty, ing.unit), isConvertible(ing.unit), '');
+        });
+        html += '</div>';
+      });
+    });
+  }
+
+  container.innerHTML = html;
+}
+
+function tableHeader() {
+  if (unitMode === 'both')
+    return `<div class="table-header-row both">
+      <div class="th td-num">#</div><div class="th">Ingredient</div>
+      <div class="th th-imp" style="text-align:right">lb Qty</div><div class="th th-imp">Unit</div>
+      <div class="th th-met" style="text-align:right">Metric</div><div class="th th-met">Unit</div>
+      <div class="th">Used in</div></div>`;
+  if (unitMode === 'imperial')
+    return `<div class="table-header-row imperial">
+      <div class="th td-num">#</div><div class="th">Ingredient</div>
+      <div class="th th-imp" style="text-align:right">Quantity</div><div class="th th-imp">Unit</div>
+      <div class="th">Used in</div></div>`;
+  return `<div class="table-header-row metric">
+    <div class="th td-num">#</div><div class="th">Ingredient</div>
+    <div class="th th-met" style="text-align:right">Quantity</div><div class="th th-met">Unit</div>
+    <div class="th">Used in</div></div>`;
+}
+
+function ingRow(num, name, impQty, impUnit, metric, convertible, usedIn) {
+  if (unitMode === 'both') {
+    const mQ = convertible ? metric.val : impQty;
+    const mU = convertible ? metric.unit : impUnit;
+    return `<div class="ing-row both">
+      <div class="td td-num">${num}</div><div class="td">${name}</div>
+      <div class="td td-qty-imp" style="text-align:right">${impQty}</div><div class="td td-unit">${impUnit}</div>
+      <div class="td td-qty-met" style="text-align:right">${mQ}</div><div class="td td-unit">${mU}</div>
+      <div class="td td-used">${usedIn}</div></div>`;
+  }
+  if (unitMode === 'imperial')
+    return `<div class="ing-row imperial">
+      <div class="td td-num">${num}</div><div class="td">${name}</div>
+      <div class="td td-qty-imp" style="text-align:right">${impQty}</div><div class="td td-unit">${impUnit}</div>
+      <div class="td td-used">${usedIn}</div></div>`;
+  const mQ = convertible ? metric.val : impQty;
+  const mU = convertible ? metric.unit : impUnit;
+  return `<div class="ing-row metric">
+    <div class="td td-num">${num}</div><div class="td">${name}</div>
+    <div class="td td-qty-met" style="text-align:right">${mQ}</div><div class="td td-unit">${mU}</div>
+    <div class="td td-used">${usedIn}</div></div>`;
+}
+
+// People input
+document.getElementById('people-input').addEventListener('input', () => {
+  if (document.getElementById('view-list').classList.contains('active')) renderList();
+});
+
+// ─── PDF Modal ───────────────────────────────────────────
+function openPdfModal() {
+  const modal = document.getElementById('pdf-modal');
+  const inp   = document.getElementById('pdf-name-input');
+  document.getElementById('result-card').classList.remove('show');
+  document.getElementById('modal-sub').textContent =
+    'Name your PDF — it will be saved to the PDF/ folder and a shareable link will be created.';
+  inp.value = '';
+  document.getElementById('modal-go-btn').disabled = true;
+  document.getElementById('go-label').textContent = 'Generate PDF →';
+  document.getElementById('gen-spinner').style.display = 'none';
+  modal.classList.add('open');
+  setTimeout(() => inp.focus(), 350);
+}
+function closePdfModal() {
+  document.getElementById('pdf-modal').classList.remove('open');
+}
+function modalBgClick(e) {
+  if (e.target === document.getElementById('pdf-modal')) closePdfModal();
+}
+
+async function generatePdf() {
+  const name = document.getElementById('pdf-name-input').value.trim();
+  if (!name) return;
+
+  document.getElementById('gen-spinner').style.display = 'block';
+  document.getElementById('go-label').textContent      = 'Generating…';
+  document.getElementById('modal-go-btn').disabled     = true;
+
+  try {
+    const people    = getPeople();
+    const selDishes = MENU_ORDER.filter(n => selected.has(n));
+
+    // Build payload — send data, let the server make the PDF
+    const payload = {
+      filename:     name,
+      people:       people,
+      unitMode:     unitMode,
+      showCombined: document.getElementById('show-combined').checked,
+      showPerDish:  document.getElementById('show-perdish').checked,
+      categories:   CATEGORIES,
+      dishes:       selDishes.map(dishName => ({
+        name:        dishName,
+        category:    DISHES[dishName].category,
+        ingredients: DISHES[dishName].ingredients.map(ing => ({
+          name:   ing.name,
+          qty250: ing.qty250,
+          unit:   ing.unit
+        }))
+      }))
+    };
+
+    const res = await fetch('/save-pdf', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(payload)
+    });
+
+    if (!res.ok) throw new Error(`Server error ${res.status}`);
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Unknown error');
+
+    // Show shareable links
+    document.getElementById('url-local').textContent = data.url_local;
+    document.getElementById('url-wifi').textContent  = data.url_wifi;
+    document.getElementById('result-card').classList.add('show');
+    document.getElementById('modal-sub').textContent = `"${data.filename}" saved to the PDF/ folder.`;
+    document.getElementById('go-label').textContent  = 'Saved ✓';
+
+  } catch (e) {
+    alert('Could not reach the server.\n\n' + e.message +
+          '\n\nMake sure server.py is running:\n  python3 server.py');
+    document.getElementById('go-label').textContent = 'Generate PDF →';
+  } finally {
+    document.getElementById('gen-spinner').style.display = 'none';
+    document.getElementById('modal-go-btn').disabled = false;
+  }
+}
+
+function copyUrl(id) {
+  const text = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById(id).nextElementSibling;
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 1500);
+  }).catch(() => {
+    // fallback
+    const inp = document.createElement('input');
+    inp.value = text;
+    document.body.appendChild(inp);
+    inp.select();
+    document.execCommand('copy');
+    document.body.removeChild(inp);
+  });
+}
+
+// Build a clean HTML for PDF rendering
+function buildPrintHtml(selDishes, people) {
+  const showCombined = document.getElementById('show-combined').checked;
+  const showPerdish  = document.getElementById('show-perdish').checked;
+  const unitLabel    = { both: 'Imperial & Metric', imperial: 'Imperial (lb)', metric: 'Metric (kg/g)' }[unitMode];
+
+  let body = `
+    <div style="font-family:Arial,sans-serif;color:#1a1a1a;">
+    <div style="background:#8B1A1A;color:#fff;padding:12px 16px;border-radius:8px 8px 0 0;margin-bottom:4px;">
+      <div style="font-size:20px;font-weight:700;">🍛 Prasad Menu – Ingredient Planner</div>
+      <div style="font-size:12px;opacity:0.8;margin-top:2px;">${selDishes.length} dishes · ${people} people · ${unitLabel}</div>
+    </div>`;
+
+  const tblStyle  = 'width:100%;border-collapse:collapse;font-size:12px;margin-bottom:14px;';
+  const thStyle   = (bg) => `padding:6px 7px;text-align:left;background:${bg};color:#fff;font-size:10px;text-transform:uppercase;`;
+  const tdStyle   = (right) => `padding:5px 7px;border-bottom:1px solid #e8e0d8;${right ? 'text-align:right;' : ''}`;
+
+  function tableRows(ingredients) {
+    return ingredients.map((ing, i) => {
+      const qty    = calcQty(ing.qty250, people);
+      const fQty   = fmtNum(qty);
+      const metric = toMetric(qty, ing.unit);
+      const conv   = isConvertible(ing.unit);
+      const mQ = conv ? metric.val : fQty;
+      const mU = conv ? metric.unit : ing.unit;
+      const bg = i % 2 === 0 ? '#fff' : '#fbf7f2';
+
+      if (unitMode === 'both')
+        return `<tr style="background:${bg}">
+          <td style="${tdStyle(true)}">${i+1}</td>
+          <td style="${tdStyle(false)}">${ing.name}</td>
+          <td style="${tdStyle(true)};color:#E8820C;font-weight:700">${fQty}</td>
+          <td style="${tdStyle(false)};color:#888">${ing.unit}</td>
+          <td style="${tdStyle(true)};color:#1A7A6E;font-weight:700">${mQ}</td>
+          <td style="${tdStyle(false)};color:#888">${mU}</td>
+        </tr>`;
+      if (unitMode === 'imperial')
+        return `<tr style="background:${bg}">
+          <td style="${tdStyle(true)}">${i+1}</td>
+          <td style="${tdStyle(false)}">${ing.name}</td>
+          <td style="${tdStyle(true)};color:#E8820C;font-weight:700">${fQty}</td>
+          <td style="${tdStyle(false)};color:#888">${ing.unit}</td>
+        </tr>`;
+      return `<tr style="background:${bg}">
+        <td style="${tdStyle(true)}">${i+1}</td>
+        <td style="${tdStyle(false)}">${ing.name}</td>
+        <td style="${tdStyle(true)};color:#1A7A6E;font-weight:700">${mQ}</td>
+        <td style="${tdStyle(false)};color:#888">${mU}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  function tableHead(withUsedIn) {
+    if (unitMode === 'both')
+      return `<tr><th style="${thStyle('#3D5166')}">#</th><th style="${thStyle('#3D5166')}">Ingredient</th>
+        <th style="${thStyle('#c06a08')}">lb Qty</th><th style="${thStyle('#c06a08')}">Unit</th>
+        <th style="${thStyle('#15695e')}">Metric</th><th style="${thStyle('#15695e')}">Unit</th>
+        ${withUsedIn ? `<th style="${thStyle('#3D5166')}">Used in</th>` : ''}</tr>`;
+    if (unitMode === 'imperial')
+      return `<tr><th style="${thStyle('#3D5166')}">#</th><th style="${thStyle('#3D5166')}">Ingredient</th>
+        <th style="${thStyle('#c06a08')}">Quantity</th><th style="${thStyle('#c06a08')}">Unit</th>
+        ${withUsedIn ? `<th style="${thStyle('#3D5166')}">Used in</th>` : ''}</tr>`;
+    return `<tr><th style="${thStyle('#3D5166')}">#</th><th style="${thStyle('#3D5166')}">Ingredient</th>
+      <th style="${thStyle('#15695e')}">Quantity</th><th style="${thStyle('#15695e')}">Unit</th>
+      ${withUsedIn ? `<th style="${thStyle('#3D5166')}">Used in</th>` : ''}</tr>`;
+  }
+
+  if (showCombined) {
+    const combined = {};
+    selDishes.forEach(dishName => {
+      DISHES[dishName].ingredients.forEach(ing => {
+        const key = ing.name.toLowerCase();
+        if (!combined[key]) combined[key] = { name: ing.name, qty250: 0, unit: ing.unit, dishes: [] };
+        combined[key].qty250 += ing.qty250;
+        combined[key].dishes.push(dishName);
+      });
+    });
+    const rows = Object.values(combined).sort((a, b) => a.name.localeCompare(b.name));
+
+    body += `<div style="background:#2C3E50;color:#fff;padding:8px 12px;font-weight:700;border-radius:6px 6px 0 0;">
+      🛒 Combined Shopping List
+      <span style="float:right;font-size:11px;font-weight:400;opacity:0.8">${rows.length} ingredients</span>
+    </div>
+    <table style="${tblStyle}">${tableHead(false)}
+    ${rows.map((ing, i) => {
+      const qty  = calcQty(ing.qty250, people);
+      const fQty = fmtNum(qty);
+      const met  = toMetric(qty, ing.unit);
+      const conv = isConvertible(ing.unit);
+      const mQ   = conv ? met.val : fQty;
+      const mU   = conv ? met.unit : ing.unit;
+      const bg   = i % 2 === 0 ? '#fff' : '#fbf7f2';
+      if (unitMode === 'both')
+        return `<tr style="background:${bg}"><td style="${tdStyle(true)}">${i+1}</td>
+          <td style="${tdStyle(false)}">${ing.name}</td>
+          <td style="${tdStyle(true)};color:#E8820C;font-weight:700">${fQty}</td><td style="${tdStyle(false)};color:#888">${ing.unit}</td>
+          <td style="${tdStyle(true)};color:#1A7A6E;font-weight:700">${mQ}</td><td style="${tdStyle(false)};color:#888">${mU}</td></tr>`;
+      if (unitMode === 'imperial')
+        return `<tr style="background:${bg}"><td style="${tdStyle(true)}">${i+1}</td>
+          <td style="${tdStyle(false)}">${ing.name}</td>
+          <td style="${tdStyle(true)};color:#E8820C;font-weight:700">${fQty}</td><td style="${tdStyle(false)};color:#888">${ing.unit}</td></tr>`;
+      return `<tr style="background:${bg}"><td style="${tdStyle(true)}">${i+1}</td>
+        <td style="${tdStyle(false)}">${ing.name}</td>
+        <td style="${tdStyle(true)};color:#1A7A6E;font-weight:700">${mQ}</td><td style="${tdStyle(false)};color:#888">${mU}</td></tr>`;
+    }).join('')}
+    </table>`;
+  }
+
+  if (showPerdish) {
+    CATEGORIES.forEach(cat => {
+      selDishes.filter(n => DISHES[n].category === cat).forEach(dishName => {
+        const dish  = DISHES[dishName];
+        const color = catColor(cat);
+        body += `<div style="background:${color};color:#fff;padding:7px 12px;font-weight:700;border-radius:6px 6px 0 0;margin-top:10px;">
+          ${dishName} <span style="float:right;font-size:11px;font-weight:400;opacity:0.8">${dish.ingredients.length} ingredients</span>
+        </div>
+        <table style="${tblStyle}">${tableHead(false)}${tableRows(dish.ingredients)}</table>`;
+      });
+    });
+  }
+
+  body += '</div>';
+  return body;
+}
+
+// Start
+boot();
+</script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+dish,category,file
+Plain Rice,Rice & Khichdi,Plain_Rice.csv
+Muga Khichdi,Rice & Khichdi,Muga_Khichdi.csv
+Dalma,Dal,Dalma.csv
+Mitha Dali,Dal,Mitha_Dali.csv
+Plain Dali,Dal,Plain_Dali.csv
+Alu Gobi Matar,Sabji & Curries,Alu_Gobi_Matar.csv
+Navratna Korma,Sabji & Curries,Navratna_Korma.csv
+Alu gobi sabji,Sabji & Curries,Alu_gobi_sabji.csv
+Matar paneer,Sabji & Curries,Matar_paneer.csv
+Chole paneer,Sabji & Curries,Chole_paneer.csv
+Saga muga,Sabji & Curries,Saga_muga.csv
+Veggie chips,Sabji & Curries,Veggie_chips.csv
+Tomato Khajuri khata,Raita Salad & Chutney,Tomato_Khajuri_khata.csv
+Dahi Bundi Raita,Raita Salad & Chutney,Dahi_Bundi_Raita.csv
+Dahi Kakudi Salad,Raita Salad & Chutney,Dahi_Kakudi_Salad.csv
+Simei Khiri,Sweets (Khiri & Halwa),Simei_Khiri.csv
+Rice Khiri,Sweets (Khiri & Halwa),Rice_Khiri.csv
+Suji Halwa,Sweets (Khiri & Halwa),Suji_Halwa.csv
+Mango Halwa,Sweets (Khiri & Halwa),Mango_Halwa.csv
