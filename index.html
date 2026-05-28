@@ -714,6 +714,293 @@
     .url-text { color: #8FC8FF; }
   }
 
+  /* Default visibility helpers */
+  .desktop-only { display: none; }
+  .mobile-only  { display: flex; }
+
+  /* ═════════════════════════════════════════════════════════
+     DESKTOP CLASSIC DASHBOARD THEME (≥1024px)
+     Solid maroon header bar, white card columns, no glass.
+     Mobile Liquid Glass is completely untouched.
+     ═════════════════════════════════════════════════════════ */
+  @media (min-width: 1024px) {
+    :root { --tab-h: 0px; --header-h: 72px; }
+
+    body.desktop {
+      background: #F5F0EB;
+      overflow: auto;
+    }
+    body.desktop .bg-canvas,
+    body.desktop .bg-grain { display: none !important; }
+
+    body.desktop .desktop-only { display: flex; }
+    body.desktop .mobile-only  { display: none !important; }
+
+    /* ── HEADER — full-width solid maroon bar ─────────────── */
+    body.desktop .app-header {
+      position: sticky; top: 0; z-index: 100;
+      margin: 0; border-radius: 0;
+      width: 100%; max-width: none;
+      height: auto; min-height: 92px;
+      padding: 14px 24px;
+      background: linear-gradient(180deg, #9A2424, #7A1414);
+      backdrop-filter: none; -webkit-backdrop-filter: none;
+      border: none; border-bottom: 1px solid rgba(0,0,0,0.15);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      grid-template-rows: auto auto;
+      grid-template-areas:
+        "title  controls actions"
+        "title  controls actions";
+      gap: 4px 24px;
+      align-items: center;
+      color: #fff;
+    }
+    body.desktop .app-header::before,
+    body.desktop .app-header::after { display: none !important; }
+
+    body.desktop .header-left { grid-area: title; }
+    body.desktop .app-header h1 {
+      font-size: 22px; font-weight: 700;
+      background: none; -webkit-text-fill-color: #fff; color: #fff;
+      letter-spacing: -0.2px;
+    }
+    body.desktop .app-header .logo-emoji { font-size: 22px; margin-right: 4px; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.2)); }
+    body.desktop .app-header .subtitle { display: none; }
+
+    body.desktop .header-controls {
+      grid-area: controls;
+      display: flex; gap: 18px; align-items: center; flex-wrap: wrap;
+      justify-self: start;
+    }
+    body.desktop .header-field {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 13px; color: #fff; font-weight: 500;
+    }
+    body.desktop .header-field span { opacity: 0.92; }
+    body.desktop .header-field input[type="number"] {
+      width: 70px; padding: 7px 10px;
+      border: 1px solid rgba(255,255,255,0.30);
+      background: #F5DC60; color: #1A1208;
+      border-radius: 6px; font-size: 14px; font-weight: 700;
+      text-align: center; outline: none;
+    }
+    body.desktop .header-field select {
+      padding: 7px 28px 7px 12px;
+      background: #fff url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' stroke='%231A1208' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>") no-repeat right 10px center;
+      border: 1px solid rgba(255,255,255,0.30);
+      border-radius: 6px; font-size: 13px; font-weight: 500; color: #1A1208;
+      -webkit-appearance: none; appearance: none;
+      cursor: pointer; outline: none;
+    }
+    body.desktop .header-check {
+      display: flex; align-items: center; gap: 7px;
+      color: #fff; font-size: 13px; font-weight: 500; cursor: pointer;
+      opacity: 0.95;
+    }
+    body.desktop .header-check input[type="checkbox"] {
+      width: 16px; height: 16px; accent-color: #fff; cursor: pointer;
+    }
+
+    body.desktop .header-actions {
+      grid-area: actions;
+      display: flex; gap: 10px; align-items: center;
+    }
+    body.desktop .hdr-btn {
+      padding: 9px 18px; border: 1.5px solid rgba(255,255,255,0.85);
+      background: transparent; color: #fff;
+      border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      display: inline-flex; align-items: center;
+    }
+    body.desktop .hdr-btn:hover  { background: rgba(255,255,255,0.10); }
+    body.desktop .hdr-btn:active { transform: scale(0.97); }
+    body.desktop .hdr-btn-primary {
+      background: #E89530; border-color: #E89530; color: #fff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    }
+    body.desktop .hdr-btn-primary:hover { background: #D88420; border-color: #D88420; }
+
+    /* ── BODY: two-column grid ───────────────────────────── */
+    body.desktop .app-body {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 18px;
+      padding: 18px 24px 28px;
+      max-width: 1600px;
+      margin: 0 auto;
+      width: 100%;
+      align-items: start;
+    }
+    body.desktop .view#view-menu,
+    body.desktop .view#view-list { display: block !important; }
+    body.desktop .view#view-loading,
+    body.desktop .view#view-error { display: none; }
+    body.desktop.is-loading .view#view-loading,
+    body.desktop.is-error   .view#view-error { display: block !important; grid-column: 1 / -1; }
+    body.desktop.is-loading .view#view-menu,
+    body.desktop.is-loading .view#view-list,
+    body.desktop.is-error   .view#view-menu,
+    body.desktop.is-error   .view#view-list { display: none !important; }
+    body.desktop #view-menu { grid-column: 1; }
+    body.desktop #view-list { grid-column: 2; min-width: 0; }
+    body.desktop .tab-bar { display: none !important; }
+
+    /* Hide mobile toolbars (we put everything in the header) */
+    body.desktop .menu-toolbar,
+    body.desktop .list-toolbar { display: none !important; }
+
+    /* ── LEFT MENU CARD ──────────────────────────────────── */
+    body.desktop #view-menu {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      padding: 18px 18px 22px;
+    }
+    body.desktop #view-menu::before {
+      content: "MENU";
+      display: block; padding: 0 0 14px;
+      font-size: 12px; letter-spacing: 1.5px;
+      color: #888; font-weight: 700;
+    }
+
+    /* Category blocks as colored pills with dishes flat underneath */
+    body.desktop .category-block {
+      background: transparent; backdrop-filter: none; -webkit-backdrop-filter: none;
+      border: none; box-shadow: none; border-radius: 0;
+      margin: 0 0 8px;
+      overflow: visible;
+    }
+    body.desktop .category-block::before,
+    body.desktop .category-block .lg::before,
+    body.desktop .category-block.lg::before,
+    body.desktop .category-block.lg::after { display: none !important; }
+    body.desktop .category-header {
+      border-radius: 8px;
+      padding: 9px 12px;
+      gap: 8px;
+      background: var(--cat-color, #8B1A1A) !important;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.10);
+    }
+    body.desktop .category-header::after { display: none !important; }
+    body.desktop .category-name { font-size: 14px; font-weight: 700; }
+    body.desktop .cat-btn {
+      padding: 3px 9px; font-size: 11px;
+      background: transparent; border: 1px solid rgba(255,255,255,0.75);
+      backdrop-filter: none;
+    }
+    body.desktop .cat-btn:hover { background: rgba(255,255,255,0.18); }
+    body.desktop .cat-count {
+      padding: 2px 10px; font-size: 11px;
+      background: rgba(0,0,0,0.18); border: none;
+    }
+    body.desktop .chevron { font-size: 12px; }
+
+    body.desktop .category-items {
+      background: transparent;
+      padding: 4px 0 6px;
+    }
+    body.desktop .dish-item {
+      padding: 6px 8px;
+      gap: 10px;
+      border-bottom: none;
+      border-radius: 6px;
+    }
+    body.desktop .dish-item:hover { background: #F5F0EB; }
+    body.desktop .dish-item:active { background: #ECE5DD; }
+    body.desktop .dish-check {
+      width: 18px; height: 18px; border-radius: 4px;
+      border: 1.5px solid #B0A89F; background: #fff;
+      box-shadow: none;
+    }
+    body.desktop .dish-item.selected .dish-check {
+      background: linear-gradient(180deg, #1E78DC, #0A5BBA);
+      border-color: #0A5BBA;
+      box-shadow: none;
+      transform: none;
+    }
+    body.desktop .dish-name { font-size: 14px; color: #1A1208; font-weight: 500; }
+    body.desktop .dish-count-badge { display: none; }
+
+    /* ── RIGHT: SHOPPING LIST CARD ───────────────────────── */
+    body.desktop #view-list {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      overflow: hidden;
+    }
+    body.desktop .section-block {
+      background: #fff !important;
+      backdrop-filter: none; -webkit-backdrop-filter: none;
+      border: none;
+      box-shadow: none;
+      margin: 0;
+      border-radius: 0;
+      border-bottom: 1px solid #E8E2DA;
+    }
+    body.desktop .section-block::before,
+    body.desktop .section-block.lg::before,
+    body.desktop .section-block.lg::after { display: none !important; }
+    body.desktop .section-block:last-child { border-bottom: none; }
+
+    body.desktop .combined-header,
+    body.desktop .dish-section-header {
+      padding: 14px 20px;
+      font-size: 16px; font-weight: 700;
+      background: #2C3E50 !important;
+      color: #fff;
+      gap: 10px;
+    }
+    body.desktop .dish-section-header {
+      background: var(--cat-color, #8B1A1A) !important;
+      font-size: 15px;
+    }
+    body.desktop .combined-stats,
+    body.desktop .ing-count { font-size: 12px; opacity: 0.85; font-weight: 500; }
+
+    /* Table: column-tinted, double-row header */
+    body.desktop .table-header-row {
+      background: #ECE5DD;
+      color: #4A3A2A;
+      font-size: 12px; font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+    body.desktop .table-header-row.both    { grid-template-columns: 56px minmax(160px,1.4fr) 110px 90px 110px 90px minmax(120px,0.8fr); }
+    body.desktop .table-header-row.imperial{ grid-template-columns: 56px minmax(160px,1.4fr) 130px 100px minmax(120px,0.8fr); }
+    body.desktop .table-header-row.metric  { grid-template-columns: 56px minmax(160px,1.4fr) 130px 100px minmax(120px,0.8fr); }
+    body.desktop .th { padding: 11px 10px; font-size: 12px; text-transform: none; }
+    body.desktop .th-imp { background: #E89530; color: #fff; }
+    body.desktop .th-met { background: #2A8073; color: #fff; }
+
+    body.desktop .ing-row {
+      font-size: 14px; color: #1A1208;
+      border-bottom: 1px solid #F0EAE2;
+    }
+    body.desktop .ing-row.both    { grid-template-columns: 56px minmax(160px,1.4fr) 110px 90px 110px 90px minmax(120px,0.8fr); }
+    body.desktop .ing-row.imperial{ grid-template-columns: 56px minmax(160px,1.4fr) 130px 100px minmax(120px,0.8fr); }
+    body.desktop .ing-row.metric  { grid-template-columns: 56px minmax(160px,1.4fr) 130px 100px minmax(120px,0.8fr); }
+    body.desktop .ing-row:nth-child(even) { background: #FDFBF7; }
+    body.desktop .ing-row:hover { background: #F5F0EB; }
+    body.desktop .td { padding: 12px 10px; font-size: 13px; }
+    body.desktop .td-num { color: #888; font-weight: 500; font-size: 13px; }
+    body.desktop .td-qty-imp { color: #1A1208; font-weight: 700; background: #FDF1E2; }
+    body.desktop .td-qty-met { color: #1A1208; font-weight: 700; background: #E4F2EE; }
+    body.desktop .td:nth-child(4) { background: #FDF1E2; color: #6B5A4A; }
+    body.desktop .ing-row.both .td:nth-child(6) { background: #E4F2EE; color: #6B5A4A; }
+    body.desktop .td-used {
+      color: #1A1208; font-size: 12px;
+      display: flex; flex-wrap: wrap; gap: 4px;
+    }
+    body.desktop .td-used:empty::before { content: "—"; color: #B0A89F; }
+
+    body.desktop .no-selection { background: #fff; border: none; box-shadow: none; padding: 60px 24px; }
+  }
+
+  @media (min-width: 1400px) {
+    body.desktop .app-body { grid-template-columns: 380px 1fr; max-width: 1700px; }
+  }
+
   /* ── Print ────────────────────────────────────────────── */
   @media print {
     .bg-canvas, .bg-grain, .app-header, .tab-bar, .menu-toolbar, .list-toolbar, .pdf-btn { display: none !important; }
@@ -727,7 +1014,7 @@
   }
 </style>
 </head>
-<body>
+<body class="is-loading">
 
 <div class="bg-canvas"></div>
 <div class="bg-grain"></div>
@@ -744,10 +1031,44 @@
 
 <header class="app-header lg">
   <div class="header-left">
-    <h1>🍛 Prasad Menu</h1>
+    <h1><span class="logo-emoji">🍛</span> Prasad Menu<span class="header-dash"> — Ingredient Planner</span></h1>
     <div class="subtitle">Liquid Ingredient Planner</div>
   </div>
-  <div class="people-badge">
+
+  <!-- DESKTOP-ONLY inline controls -->
+  <div class="header-controls desktop-only">
+    <label class="header-field">
+      <span>Number of People:</span>
+      <input type="number" id="people-input-d" value="250" min="1" max="9999" step="50">
+    </label>
+    <label class="header-field">
+      <span>Show:</span>
+      <select id="unit-select-d">
+        <option value="both" selected>Both Imperial &amp; Metric</option>
+        <option value="imperial">Imperial only</option>
+        <option value="metric">Metric only</option>
+      </select>
+    </label>
+    <label class="header-check"><input type="checkbox" id="show-combined-d" checked> Combined shopping list</label>
+    <label class="header-check"><input type="checkbox" id="show-perdish-d" checked> Per-dish breakdown</label>
+    <label class="header-check"><input type="checkbox" id="show-compact-d"> Compact PDF (1-2 pages)</label>
+  </div>
+
+  <div class="header-actions desktop-only">
+    <button class="hdr-btn" onclick="selectAll()">Select All</button>
+    <button class="hdr-btn" onclick="clearAll()">Clear All</button>
+    <button class="hdr-btn hdr-btn-primary" onclick="openPdfModal()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" style="vertical-align:-2px;margin-right:4px">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+      Save as PDF
+    </button>
+  </div>
+
+  <!-- MOBILE people badge -->
+  <div class="people-badge mobile-only">
     <label>People</label>
     <select id="people-input">
       <option value="200">200</option>
@@ -896,6 +1217,42 @@ let selected   = new Set();
 let unitMode   = 'both';
 let collapsed  = {};
 
+// ─── Desktop / mobile detection ─────────────────────────
+const DESKTOP_MQ = window.matchMedia('(min-width: 1024px)');
+function applyLayoutMode() {
+  document.body.classList.toggle('desktop', DESKTOP_MQ.matches);
+}
+DESKTOP_MQ.addEventListener('change', () => { applyLayoutMode(); if (DESKTOP_MQ.matches) renderList(); });
+applyLayoutMode();
+function isDesktop() { return DESKTOP_MQ.matches; }
+
+// ─── Sync desktop ↔ mobile inputs ───────────────────────
+function getPeopleD() {
+  const d = document.getElementById('people-input-d');
+  return d && isDesktop() ? parseInt(d.value) || 200 : null;
+}
+function wireDesktopControls() {
+  // People — desktop number input mirrors to mobile select
+  const dPeople = document.getElementById('people-input-d');
+  const mPeople = document.getElementById('people-input');
+  if (dPeople) {
+    dPeople.addEventListener('input', () => { renderList(); });
+  }
+
+  // Show: dropdown ↔ setUnit()
+  const sel = document.getElementById('unit-select-d');
+  if (sel) sel.addEventListener('change', () => setUnit(sel.value));
+
+  // Checkboxes: sync desktop checkboxes to existing mobile ones
+  ['combined','perdish'].forEach(key => {
+    const d = document.getElementById('show-' + key + '-d');
+    const m = document.getElementById('show-' + key);
+    if (!d || !m) return;
+    d.checked = m.checked;
+    d.addEventListener('change', () => { m.checked = d.checked; renderList(); });
+  });
+}
+
 const CAT_COLORS = {
   "Rice & Khichdi":        "#7B5E2A",
   "Dal":                   "#8B3A0F",
@@ -995,12 +1352,16 @@ async function boot() {
 }
 
 function showApp() {
+  document.body.classList.remove('is-loading', 'is-error');
   switchView('menu');
   document.getElementById('tab-menu').classList.add('active');
+  wireDesktopControls();
   renderMenu();
+  if (isDesktop()) renderList();
 }
 
 function showError(msg) {
+  document.body.classList.remove('is-loading'); document.body.classList.add('is-error');
   document.querySelector('#view-error .splash h2').textContent = 'Load Error';
   document.querySelector('#view-error .splash p').textContent  = msg;
   switchView('error');
@@ -1058,7 +1419,11 @@ function toMetric(qty, unit) {
   return { val: +qty.toFixed(2), unit };
 }
 function isConvertible(unit) { return unit === 'lb' || unit === 'gallons'; }
-function getPeople() { return parseInt(document.getElementById('people-input').value) || 200; }
+function getPeople() {
+  const dv = getPeopleD();
+  if (dv !== null && !isNaN(dv)) return dv;
+  return parseInt(document.getElementById('people-input').value) || 200;
+}
 function calcQty(qty250, people) { return qty250 * people / 250; }
 
 // ─── Render Menu ─────────────────────────────────────────
@@ -1112,6 +1477,7 @@ function renderMenu() {
         selected.has(name) ? selected.delete(name) : selected.add(name);
         renderMenu();
         updateMenuStats();
+        if (isDesktop()) renderList();
       };
       items.appendChild(item);
     });
@@ -1127,10 +1493,10 @@ function updateMenuStats() {
   const n = selected.size;
   document.getElementById('menu-stats').textContent = n === 1 ? '1 dish selected' : `${n} dishes selected`;
 }
-function catAll(cat, e)  { e.stopPropagation(); MENU_ORDER.filter(n => DISHES[n].category === cat).forEach(n => selected.add(n));    renderMenu(); }
-function catNone(cat, e) { e.stopPropagation(); MENU_ORDER.filter(n => DISHES[n].category === cat).forEach(n => selected.delete(n)); renderMenu(); }
-function selectAll() { MENU_ORDER.forEach(n => selected.add(n)); renderMenu(); }
-function clearAll()  { selected.clear(); renderMenu(); }
+function catAll(cat, e)  { e.stopPropagation(); MENU_ORDER.filter(n => DISHES[n].category === cat).forEach(n => selected.add(n));    renderMenu(); if (isDesktop()) renderList(); }
+function catNone(cat, e) { e.stopPropagation(); MENU_ORDER.filter(n => DISHES[n].category === cat).forEach(n => selected.delete(n)); renderMenu(); if (isDesktop()) renderList(); }
+function selectAll() { MENU_ORDER.forEach(n => selected.add(n)); renderMenu(); if (isDesktop()) renderList(); }
+function clearAll()  { selected.clear(); renderMenu(); if (isDesktop()) renderList(); }
 
 // ─── Render Shopping List ────────────────────────────────
 function renderList() {
