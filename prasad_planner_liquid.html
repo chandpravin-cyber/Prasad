@@ -4,37 +4,51 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#fef3e2">
+<meta name="apple-mobile-web-app-title" content="Prasad">
+<meta name="theme-color" content="#0a2a4a">
 <title>Prasad Menu – Liquid Glass</title>
+
+<!-- PWA manifest -->
+<link rel="manifest" href="manifest.json">
+
+<!-- iOS home-screen icons (Safari ignores manifest icons, needs these) -->
+<link rel="apple-touch-icon" sizes="120x120" href="icons/icon-120.png">
+<link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152.png">
+<link rel="apple-touch-icon" sizes="167x167" href="icons/icon-167.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
 <style>
   /* ─────────────────────────────────────────────────────────
      LIQUID GLASS THEME · iOS 26 inspired
      Frosted panels · animated mesh background · specular highlights
      ───────────────────────────────────────────────────────── */
   :root {
-    /* Brand accents (kept from original so categories still match) */
-    --primary:        #8B1A1A;
-    --primary-dark:   #6B1010;
-    --accent:         #E8820C;
-    --teal:           #1A7A6E;
+    /* Brand accents — now blue-led */
+    --primary:        #0A5BBA;
+    --primary-dark:   #073F82;
+    --accent:         #00B4D8;     /* cyan accent for highlights */
+    --teal:           #1A7A6E;     /* kept for metric-column tint */
+    --maroon:         #8B1A1A;     /* preserved for warm category tags */
 
-    /* Glass tokens */
-    --glass-bg:       rgba(255, 255, 255, 0.55);
-    --glass-bg-strong:rgba(255, 255, 255, 0.72);
-    --glass-bg-dark:  rgba(28, 22, 18, 0.55);
+    /* Glass tokens — slightly cooler */
+    --glass-bg:       rgba(225, 238, 255, 0.45);
+    --glass-bg-strong:rgba(235, 245, 255, 0.62);
+    --glass-bg-dark:  rgba(10, 20, 38, 0.55);
     --glass-stroke:   rgba(255, 255, 255, 0.55);
-    --glass-stroke-d: rgba(255, 255, 255, 0.25);
-    --glass-shadow:   0 10px 30px rgba(60, 30, 10, 0.18),
-                      0 1px 0  rgba(255,255,255,0.6) inset,
-                      0 -1px 0 rgba(0,0,0,0.04) inset;
-    --glass-shadow-sm:0 4px 14px rgba(60, 30, 10, 0.12),
+    --glass-stroke-d: rgba(255, 255, 255, 0.22);
+    --glass-shadow:   0 10px 30px rgba(8, 30, 70, 0.22),
+                      0 1px 0  rgba(255,255,255,0.65) inset,
+                      0 -1px 0 rgba(0,0,0,0.05) inset;
+    --glass-shadow-sm:0 4px 14px rgba(8, 30, 70, 0.16),
                       0 1px 0 rgba(255,255,255,0.55) inset;
 
     /* Text */
-    --text:           #1A1208;
-    --text-soft:      #5A4A3A;
-    --muted:          #8C7766;
+    --text:           #0A1626;
+    --text-soft:      #34557A;
+    --muted:          #6C8BAF;
     --on-tint:        #fff;
 
     /* Layout */
@@ -66,13 +80,14 @@
     position: fixed; inset: -10%;
     z-index: -2; pointer-events: none;
     background:
-      radial-gradient(40% 35% at 15% 20%, rgba(255, 178, 102, 0.85), transparent 60%),
-      radial-gradient(35% 30% at 85% 15%, rgba(232, 130, 12, 0.55), transparent 60%),
-      radial-gradient(45% 40% at 80% 80%, rgba(139, 26, 26, 0.45), transparent 65%),
-      radial-gradient(40% 35% at 20% 90%, rgba(26, 122, 110, 0.55), transparent 65%),
-      linear-gradient(180deg, #FFF4E0 0%, #FCE7CC 100%);
+      radial-gradient(45% 40% at 12% 18%, rgba(99, 180, 255, 0.95), transparent 62%),
+      radial-gradient(38% 32% at 88% 12%, rgba(0,  200, 230, 0.80), transparent 62%),
+      radial-gradient(50% 42% at 82% 82%, rgba(40,  80, 200, 0.70), transparent 65%),
+      radial-gradient(42% 38% at 18% 92%, rgba(120, 90, 220, 0.65), transparent 65%),
+      radial-gradient(60% 50% at 50% 50%, rgba(20,  60, 140, 0.40), transparent 70%),
+      linear-gradient(180deg, #0a2a4a 0%, #061a30 100%);
     animation: bgDrift 22s ease-in-out infinite alternate;
-    filter: saturate(115%);
+    filter: saturate(125%);
   }
   .bg-grain {
     position: fixed; inset: 0; z-index: -1; pointer-events: none;
@@ -94,6 +109,60 @@
     box-shadow: var(--glass-shadow);
     border-radius: var(--radius);
   }
+
+  /* Liquid Glass refraction + edge lensing — applied to every panel
+     using a shared shadow / filter recipe. Supports Safari + Chrome. */
+  .lg {
+    position: relative;
+    isolation: isolate;
+  }
+  /* moving specular light streak that drifts across glass panels */
+  .lg::before {
+    content: ""; position: absolute; inset: 0;
+    border-radius: inherit; pointer-events: none;
+    z-index: 1;
+    background:
+      linear-gradient(115deg,
+        transparent 0%,
+        transparent 35%,
+        rgba(255,255,255,0.55) 48%,
+        rgba(255,255,255,0.0) 62%,
+        transparent 100%);
+    background-size: 300% 100%;
+    background-position: 120% 0;
+    mix-blend-mode: overlay;
+    opacity: 0.7;
+    animation: lgStreak 11s ease-in-out infinite;
+    animation-delay: var(--lg-delay, 0s);
+  }
+  /* keep panel children above the decorative layers */
+  .lg > * { position: relative; z-index: 2; }
+  /* stagger panels naturally */
+  .category-block:nth-child(2n) { --lg-delay: -3s; }
+  .category-block:nth-child(3n) { --lg-delay: -6s; }
+  .section-block:nth-child(2n)  { --lg-delay: -4s; }
+  @media (prefers-reduced-motion: reduce) {
+    .lg::before, .bg-canvas { animation: none; }
+  }
+  /* inner edge lensing (bright hair-line top, soft refractive bottom) */
+  .lg::after {
+    content: ""; position: absolute; inset: 0;
+    border-radius: inherit; pointer-events: none;
+    box-shadow:
+      inset 0 1px 0   rgba(255,255,255,0.75),
+      inset 0 -1px 0  rgba(0,0,0,0.08),
+      inset 1px 0 0   rgba(255,255,255,0.35),
+      inset -1px 0 0  rgba(255,255,255,0.20);
+  }
+  @keyframes lgStreak {
+    0%   { background-position: 120% 0; opacity: 0; }
+    20%  { opacity: 0.6; }
+    60%  { background-position: -40% 0; opacity: 0.6; }
+    100% { background-position: -120% 0; opacity: 0; }
+  }
+  /* True refraction — applied to specific panels via .lg-refract.
+     Uses SVG turbulence as a displacement map underneath the blur. */
+  .lg-refract { backdrop-filter: var(--blur) url(#liquidWarp); -webkit-backdrop-filter: var(--blur); }
 
   /* ── HEADER (floating glass bar) ──────────────────────── */
   .app-header {
@@ -120,7 +189,7 @@
   .header-left { display: flex; flex-direction: column; gap: 1px; position: relative; }
   .app-header h1 {
     font-size: 18px; font-weight: 700; letter-spacing: -0.2px;
-    background: linear-gradient(180deg, #2a1a08, #5a3010);
+    background: linear-gradient(180deg, #0a2a55, #2068b8);
     -webkit-background-clip: text; background-clip: text; color: transparent;
   }
   .app-header .subtitle { font-size: 11px; color: var(--muted); font-weight: 500; }
@@ -188,7 +257,7 @@
   .tab-btn.active { color: var(--primary); }
   .tab-btn.active::after {
     content: ""; position: absolute; inset: 6px 12px;
-    background: radial-gradient(ellipse at center, rgba(232,130,12,0.18), transparent 70%);
+    background: radial-gradient(ellipse at center, rgba(0,180,216,0.30), transparent 70%);
     border-radius: 18px; z-index: -1;
   }
   .tab-btn.active svg { transform: translateY(-1px) scale(1.05); }
@@ -223,7 +292,7 @@
   }
   .spinner {
     width: 44px; height: 44px;
-    border: 4px solid rgba(232, 130, 12, 0.22);
+    border: 4px solid rgba(10, 91, 186, 0.22);
     border-top-color: var(--accent);
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
@@ -232,7 +301,7 @@
 
   /* ── File picker fallback ─────────────────────────────── */
   .file-picker-area {
-    border: 1.5px dashed rgba(139,26,26,0.35); border-radius: var(--radius);
+    border: 1.5px dashed rgba(10,91,186,0.38); border-radius: var(--radius);
     padding: 28px 20px; text-align: center; cursor: pointer;
     transition: border-color 0.25s, background 0.25s; margin: 16px 14px;
     background: rgba(255,255,255,0.4);
@@ -242,10 +311,10 @@
   .file-picker-area input { display: none; }
   .btn-primary {
     display: inline-block; padding: 11px 26px;
-    background: linear-gradient(180deg, #A52424, #6B1010);
+    background: linear-gradient(180deg, #1E78DC, #073F82);
     color: #fff; border: none; border-radius: var(--radius-pill);
     font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 12px;
-    box-shadow: 0 6px 16px rgba(139,26,26,0.35), inset 0 1px 0 rgba(255,255,255,0.25);
+    box-shadow: 0 6px 16px rgba(10,91,186,0.38), inset 0 1px 0 rgba(255,255,255,0.25);
   }
   .btn-primary:active { transform: scale(0.97); }
 
@@ -269,7 +338,7 @@
 
   .btn-sm {
     padding: 7px 16px; border-radius: var(--radius-pill);
-    border: 1px solid rgba(139,26,26,0.4);
+    border: 1px solid rgba(10,91,186,0.45);
     background: rgba(255,255,255,0.55);
     backdrop-filter: blur(10px);
     color: var(--primary); font-size: 13px; font-weight: 700; cursor: pointer;
@@ -278,9 +347,9 @@
   }
   .btn-sm:active { transform: scale(0.96); }
   .btn-sm.filled {
-    background: linear-gradient(180deg, #A52424, #6B1010);
+    background: linear-gradient(180deg, #1E78DC, #073F82);
     color: #fff; border-color: transparent;
-    box-shadow: 0 4px 12px rgba(139,26,26,0.35), inset 0 1px 0 rgba(255,255,255,0.25);
+    box-shadow: 0 4px 12px rgba(10,91,186,0.38), inset 0 1px 0 rgba(255,255,255,0.25);
   }
   .menu-stats { margin-left: auto; font-size: 12px; color: var(--text-soft); white-space: nowrap; font-weight: 600; }
 
@@ -354,7 +423,7 @@
   .dish-item:active { background: rgba(255,255,255,0.45); }
   .dish-check {
     width: 24px; height: 24px; border-radius: 8px;
-    border: 1.5px solid rgba(139,26,26,0.35);
+    border: 1.5px solid rgba(10,91,186,0.38);
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
     background: rgba(255,255,255,0.7);
@@ -363,9 +432,9 @@
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
   }
   .dish-item.selected .dish-check {
-    background: linear-gradient(180deg, #C53030, #8B1A1A);
+    background: linear-gradient(180deg, #2E92F5, #073F82);
     border-color: transparent;
-    box-shadow: 0 3px 8px rgba(139,26,26,0.4), inset 0 1px 0 rgba(255,255,255,0.3);
+    box-shadow: 0 3px 10px rgba(10,91,186,0.55), inset 0 1px 0 rgba(255,255,255,0.4);
     transform: scale(1.05);
   }
   .dish-check svg { display: none; }
@@ -401,18 +470,18 @@
   }
 
   .summary-pill {
-    background: linear-gradient(180deg, #A52424, #6B1010);
+    background: linear-gradient(180deg, #1E78DC, #073F82);
     color: #fff; border-radius: var(--radius-pill);
     padding: 6px 14px; font-size: 11px; font-weight: 700; flex-shrink: 0;
-    box-shadow: 0 3px 10px rgba(139,26,26,0.30), inset 0 1px 0 rgba(255,255,255,0.25);
+    box-shadow: 0 3px 10px rgba(10,91,186,0.32), inset 0 1px 0 rgba(255,255,255,0.25);
   }
   .pdf-btn {
     margin-left: auto; padding: 8px 16px;
-    background: linear-gradient(180deg, #F39820, #C06A08);
+    background: linear-gradient(180deg, #00C2E8, #0080A8);
     color: #fff; border: none; border-radius: var(--radius-pill);
     font-size: 12px; font-weight: 700; cursor: pointer;
     display: flex; align-items: center; gap: 6px; flex-shrink: 0;
-    box-shadow: 0 4px 14px rgba(232,130,12,0.4), inset 0 1px 0 rgba(255,255,255,0.3);
+    box-shadow: 0 4px 14px rgba(0, 180, 216, 0.45), inset 0 1px 0 rgba(255,255,255,0.35);
     transition: transform 0.15s;
   }
   .pdf-btn:active { transform: scale(0.97); }
@@ -541,7 +610,7 @@
   .modal-input:focus {
     border-color: var(--accent);
     background: rgba(255,255,255,0.85);
-    box-shadow: 0 0 0 4px rgba(232,130,12,0.18), inset 0 1px 0 rgba(255,255,255,0.9);
+    box-shadow: 0 0 0 4px rgba(0,180,216,0.22), inset 0 1px 0 rgba(255,255,255,0.9);
   }
   .modal-actions { display: flex; gap: 10px; margin-top: 16px; }
   .modal-cancel {
@@ -554,11 +623,11 @@
   }
   .modal-go {
     flex: 2; padding: 13px;
-    background: linear-gradient(180deg, #A52424, #6B1010);
+    background: linear-gradient(180deg, #1E78DC, #073F82);
     color: #fff; border: none; border-radius: 14px;
     font-size: 15px; font-weight: 700; cursor: pointer;
     display: flex; align-items: center; justify-content: center; gap: 8px;
-    box-shadow: 0 6px 20px rgba(139,26,26,0.40), inset 0 1px 0 rgba(255,255,255,0.25);
+    box-shadow: 0 6px 20px rgba(10,91,186,0.42), inset 0 1px 0 rgba(255,255,255,0.25);
     transition: transform 0.15s;
   }
   .modal-go:disabled { background: linear-gradient(180deg, #c8b8a8, #a89888); cursor: default; box-shadow: none; }
@@ -584,7 +653,7 @@
   .url-text  { font-size: 11px; color: #1A5A8B; flex: 1; word-break: break-all; font-family: 'SF Mono', Menlo, monospace; }
   .copy-btn  {
     padding: 5px 10px;
-    background: linear-gradient(180deg, #A52424, #6B1010);
+    background: linear-gradient(180deg, #1E78DC, #073F82);
     color: #fff; border: none; border-radius: 7px;
     font-size: 11px; font-weight: 700; cursor: pointer; flex-shrink: 0;
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.25);
@@ -625,17 +694,17 @@
     }
     .bg-canvas {
       background:
-        radial-gradient(40% 35% at 15% 20%, rgba(255, 140, 60, 0.55), transparent 60%),
-        radial-gradient(35% 30% at 85% 15%, rgba(232, 130, 12, 0.35), transparent 60%),
-        radial-gradient(45% 40% at 80% 80%, rgba(139, 26, 26, 0.45), transparent 65%),
-        radial-gradient(40% 35% at 20% 90%, rgba(26, 122, 110, 0.45), transparent 65%),
-        linear-gradient(180deg, #1a1108 0%, #261810 100%);
+        radial-gradient(40% 35% at 15% 20%, rgba(80, 140, 220, 0.60), transparent 60%),
+        radial-gradient(35% 30% at 85% 15%, rgba(0,  200, 230, 0.45), transparent 60%),
+        radial-gradient(45% 40% at 80% 80%, rgba(40,  70, 200, 0.55), transparent 65%),
+        radial-gradient(40% 35% at 20% 90%, rgba(110, 80, 220, 0.50), transparent 65%),
+        linear-gradient(180deg, #04101e 0%, #061a30 100%);
     }
     .app-header h1 {
-      background: linear-gradient(180deg, #FFE4B0, #E8A060);
+      background: linear-gradient(180deg, #DCEEFF, #6AB6FF);
       -webkit-background-clip: text; background-clip: text; color: transparent;
     }
-    .people-badge select { background: linear-gradient(180deg, #4a3520, #3a2818); color: #FFD89F; }
+    .people-badge select { background: linear-gradient(180deg, #1b3550, #0e2238); color: #8FC8FF; }
     .dish-name { color: var(--text); }
     .ing-row { color: var(--text); }
     .dish-count-badge { background: rgba(255,255,255,0.10); border-color: rgba(255,255,255,0.18); color: var(--text-soft); }
@@ -663,7 +732,17 @@
 <div class="bg-canvas"></div>
 <div class="bg-grain"></div>
 
-<header class="app-header">
+<!-- SVG filter for true liquid-glass refraction (Apple-style displacement) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <filter id="liquidWarp" x="0%" y="0%" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.012 0.018" numOctaves="2" seed="7" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="6" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+</svg>
+
+<header class="app-header lg">
   <div class="header-left">
     <h1>🍛 Prasad Menu</h1>
     <div class="subtitle">Liquid Ingredient Planner</div>
@@ -716,7 +795,7 @@
 
   <!-- MENU VIEW -->
   <div class="view" id="view-menu">
-    <div class="menu-toolbar">
+    <div class="menu-toolbar lg">
       <button class="btn-sm filled" onclick="selectAll()">Select All</button>
       <button class="btn-sm" onclick="clearAll()">Clear All</button>
       <span class="menu-stats" id="menu-stats">0 dishes selected</span>
@@ -726,7 +805,7 @@
 
   <!-- SHOPPING LIST VIEW -->
   <div class="view" id="view-list">
-    <div class="list-toolbar">
+    <div class="list-toolbar lg">
       <div class="list-toolbar-row">
         <div class="unit-seg">
           <button onclick="setUnit('both')" class="active" id="unit-both">Both</button>
@@ -759,7 +838,7 @@
 
 <!-- ─── PDF MODAL ─── -->
 <div class="modal-overlay" id="pdf-modal" onclick="modalBgClick(event)">
-  <div class="modal-sheet">
+  <div class="modal-sheet lg">
     <div class="modal-handle"></div>
     <div class="modal-title">💾 Save Shopping List</div>
     <div class="modal-sub" id="modal-sub">Name your PDF — it will be saved to the PDF/ folder and a shareable link will be created.</div>
@@ -789,7 +868,7 @@
   </div>
 </div>
 
-<nav class="tab-bar">
+<nav class="tab-bar lg">
   <button class="tab-btn" id="tab-menu" onclick="switchTab('menu')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
       <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
@@ -994,7 +1073,7 @@ function renderMenu() {
     const color = catColor(cat);
 
     const block = document.createElement('div');
-    block.className = 'category-block';
+    block.className = 'category-block lg';
 
     const header = document.createElement('div');
     header.className = 'category-header' + (isCollapsed ? ' collapsed' : '');
@@ -1085,7 +1164,7 @@ function renderList() {
     });
     const rows = Object.values(combined).sort((a, b) => a.name.localeCompare(b.name));
 
-    html += `<div class="section-block">
+    html += `<div class="section-block lg">
       <div class="combined-header">🛒 Combined Shopping List
         <span class="combined-stats">${selDishes.length} dishes · ${rows.length} ingredients · ${people} people</span>
       </div>
@@ -1101,7 +1180,7 @@ function renderList() {
     CATEGORIES.forEach(cat => {
       selDishes.filter(n => DISHES[n].category === cat).forEach(dishName => {
         const dish = DISHES[dishName];
-        html += `<div class="section-block">
+        html += `<div class="section-block lg">
           <div class="dish-section-header" style="--cat-color:${catColor(cat)}">
             ${dishName}
             <span class="ing-count">${dish.ingredients.length} ingredients · ${people} people</span>
@@ -1256,6 +1335,57 @@ function copyUrl(id) {
     document.body.removeChild(inp);
   });
 }
+
+// ─── Service Worker registration (PWA) ──────────────────
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW failed', err));
+  });
+}
+
+// ─── "Add to Home Screen" hint for iOS Safari ───────────
+(function() {
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+  const dismissed = localStorage.getItem('prasad-install-hint-dismissed');
+  if (!isIOS || isStandalone || dismissed) return;
+
+  const hint = document.createElement('div');
+  hint.style.cssText = `
+    position: fixed; left: 14px; right: 14px;
+    bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+    background: rgba(235,245,255,0.85);
+    backdrop-filter: saturate(180%) blur(22px);
+    -webkit-backdrop-filter: saturate(180%) blur(22px);
+    border: 1px solid rgba(255,255,255,0.6);
+    border-radius: 18px;
+    box-shadow: 0 10px 30px rgba(8,30,70,0.25), inset 0 1px 0 rgba(255,255,255,0.7);
+    padding: 12px 14px;
+    z-index: 150;
+    font-size: 13px; color: #0A1626; line-height: 1.4;
+    display: flex; align-items: center; gap: 10px;
+    animation: hintIn 0.4s cubic-bezier(.4,1.2,.5,1);
+  `;
+  hint.innerHTML = `
+    <div style="font-size:22px">📲</div>
+    <div style="flex:1">
+      <div style="font-weight:700; margin-bottom:2px">Install as an app</div>
+      <div style="color:#34557A; font-size:12px">Tap <strong>Share</strong> → <strong>Add to Home Screen</strong></div>
+    </div>
+    <button id="hint-close" style="background:linear-gradient(180deg,#1E78DC,#073F82); color:#fff; border:none; padding:8px 14px; border-radius:999px; font-size:12px; font-weight:700; cursor:pointer; box-shadow:0 4px 12px rgba(10,91,186,0.45), inset 0 1px 0 rgba(255,255,255,0.25);">Got it</button>
+  `;
+  document.body.appendChild(hint);
+
+  const style = document.createElement('style');
+  style.textContent = `@keyframes hintIn { from { transform: translateY(20px); opacity:0; } to { transform: translateY(0); opacity:1; } }`;
+  document.head.appendChild(style);
+
+  document.getElementById('hint-close').onclick = () => {
+    localStorage.setItem('prasad-install-hint-dismissed', '1');
+    hint.style.animation = 'hintIn 0.3s cubic-bezier(.4,0,.5,1) reverse';
+    setTimeout(() => hint.remove(), 280);
+  };
+})();
 
 // Start
 boot();

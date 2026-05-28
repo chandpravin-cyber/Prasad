@@ -1,4 +1,6 @@
 .DS_Store
 PDF/
+Backups/
 __pycache__/
 *.pyc
+*.zip
