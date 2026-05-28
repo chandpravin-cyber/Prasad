@@ -2,9 +2,10 @@
    Caches the HTML, all CSVs, and icons so the app works offline.
    Bump CACHE_VERSION when you ship changes so old caches are wiped. */
 
-const CACHE_VERSION = 'prasad-v3';
+const CACHE_VERSION = 'prasad-v4';
 const ASSETS = [
   './',
+  './index.html',
   './prasad_planner_liquid.html',
   './prasad_planner.html',
   './manifest.json',
@@ -70,7 +71,7 @@ self.addEventListener('fetch', event => {
           caches.open(CACHE_VERSION).then(c => c.put(req, respClone));
         }
         return resp;
-      }).catch(() => caches.match('./prasad_planner_liquid.html'));
+      }).catch(() => caches.match('./index.html'));
     })
   );
 });

@@ -2,7 +2,7 @@
   "name": "Prasad Menu — Ingredient Planner",
   "short_name": "Prasad",
   "description": "Plan dishes and compute ingredient quantities for any number of people.",
-  "start_url": "./prasad_planner_liquid.html",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
