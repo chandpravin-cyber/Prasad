@@ -51,18 +51,10 @@
     border-radius: 20px; padding: 4px 10px 4px 6px;
   }
   .people-badge label { font-size: 11px; opacity: 0.85; white-space: nowrap; }
-<<<<<<< HEAD
   .people-badge input {
     width: 52px; background: rgba(255,255,255,0.9);
     border: none; border-radius: 12px; color: var(--primary);
     font-size: 15px; font-weight: 700; text-align: center; padding: 2px 4px; outline: none;
-=======
-  .people-badge select {
-    background: rgba(255,255,255,0.9);
-    border: none; border-radius: 12px; color: var(--primary);
-    font-size: 15px; font-weight: 700; text-align: center; padding: 2px 6px; outline: none;
-    -webkit-appearance: none; appearance: none; cursor: pointer;
->>>>>>> 3f544c1 (Initial commit — Prasad menu planner with Liquid Glass theme)
   }
 
   /* BODY */
@@ -182,7 +174,7 @@
   .dish-item:last-child { border-bottom: none; }
   .dish-item:active { background: var(--row-alt); }
   .dish-check {
-    width: 22px; height: 22px; border-radius: 6px;
+    width: 22px; height: 22px; border-radius: 50%;
     border: 2px solid var(--border);
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0; transition: all 0.15s; background: #fff;
@@ -364,19 +356,7 @@
   </div>
   <div class="people-badge">
     <label>People:</label>
-<<<<<<< HEAD
-    <input type="number" id="people-input" value="200" min="1" max="10000">
-=======
-    <select id="people-input">
-      <option value="200">200</option>
-      <option value="250" selected>250</option>
-      <option value="300">300</option>
-      <option value="350">350</option>
-      <option value="400">400</option>
-      <option value="450">450</option>
-      <option value="500">500</option>
-    </select>
->>>>>>> 3f544c1 (Initial commit — Prasad menu planner with Liquid Glass theme)
+    <input type="number" id="people-input" value="250" min="1" max="10000">
   </div>
 </header>
 
@@ -708,8 +688,7 @@ function renderMenu() {
     header.innerHTML = `
       <span class="category-name">${cat}</span>
       <div class="cat-btns">
-        <button class="cat-btn" onclick="catAll('${cat}',event)">All</button>
-        <button class="cat-btn" onclick="catNone('${cat}',event)">None</button>
+        <button class="cat-btn" onclick="catNone('${cat}',event)">Clear</button>
       </div>
       <span class="cat-count">${selCount}/${dishes.length}</span>
       <span class="chevron ${isCollapsed ? '' : 'open'}">›</span>`;
@@ -729,14 +708,20 @@ function renderMenu() {
       item.className = 'dish-item' + (isSel ? ' selected' : '');
       item.innerHTML = `
         <div class="dish-check">
-          <svg viewBox="0 0 12 12" fill="none" width="12" height="12">
-            <polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <svg viewBox="0 0 12 12" fill="none" width="8" height="8">
+            <circle cx="6" cy="6" r="5" fill="white"/>
           </svg>
         </div>
         <span class="dish-name">${name}</span>
         <span class="dish-count-badge">${dish.ingredients.length} ing</span>`;
       item.onclick = () => {
-        selected.has(name) ? selected.delete(name) : selected.add(name);
+        if (selected.has(name)) {
+          selected.delete(name);
+        } else {
+          // Radio behavior: clear other dishes in this category, then select this one
+          MENU_ORDER.filter(n => DISHES[n].category === cat).forEach(n => selected.delete(n));
+          selected.add(name);
+        }
         renderMenu();
         updateMenuStats();
       };
@@ -756,7 +741,15 @@ function updateMenuStats() {
 }
 function catAll(cat, e)  { e.stopPropagation(); MENU_ORDER.filter(n => DISHES[n].category === cat).forEach(n => selected.add(n));    renderMenu(); }
 function catNone(cat, e) { e.stopPropagation(); MENU_ORDER.filter(n => DISHES[n].category === cat).forEach(n => selected.delete(n)); renderMenu(); }
-function selectAll() { MENU_ORDER.forEach(n => selected.add(n)); renderMenu(); }
+function selectAll() {
+  // Radio behavior: pick the first dish from each category
+  selected.clear();
+  CATEGORIES.forEach(cat => {
+    const first = MENU_ORDER.find(n => DISHES[n].category === cat);
+    if (first) selected.add(first);
+  });
+  renderMenu();
+}
 function clearAll()  { selected.clear(); renderMenu(); }
 
 // ─── Render Shopping List ────────────────────────────────
@@ -868,11 +861,7 @@ function ingRow(num, name, impQty, impUnit, metric, convertible, usedIn) {
 }
 
 // People input
-<<<<<<< HEAD
 document.getElementById('people-input').addEventListener('input', () => {
-=======
-document.getElementById('people-input').addEventListener('change', () => {
->>>>>>> 3f544c1 (Initial commit — Prasad menu planner with Liquid Glass theme)
   if (document.getElementById('view-list').classList.contains('active')) renderList();
 });
 

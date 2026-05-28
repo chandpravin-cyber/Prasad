@@ -205,14 +205,24 @@
     position: relative;
   }
   .people-badge label { font-size: 11px; color: var(--text-soft); font-weight: 600; white-space: nowrap; }
-  .people-badge select {
+  .people-badge select,
+  .people-badge input[type="number"] {
     background: linear-gradient(180deg, #fff, #f3e6d3);
     border: 1px solid rgba(0,0,0,0.06);
     border-radius: var(--radius-pill);
     color: var(--primary);
     font-size: 15px; font-weight: 700; text-align: center; padding: 4px 10px; outline: none;
-    -webkit-appearance: none; appearance: none; cursor: pointer;
+    -webkit-appearance: none; appearance: none; cursor: text;
     box-shadow: 0 1px 2px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.9);
+    width: 70px; -moz-appearance: textfield;
+  }
+  .people-badge input[type="number"]::-webkit-outer-spin-button,
+  .people-badge input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none; margin: 0;
+  }
+  .people-badge input[type="number"]:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(10,91,186,0.18), inset 0 1px 0 rgba(255,255,255,0.9);
   }
 
   /* ── BODY ─────────────────────────────────────────────── */
@@ -422,7 +432,7 @@
   .dish-item:last-child { border-bottom: none; }
   .dish-item:active { background: rgba(255,255,255,0.45); }
   .dish-check {
-    width: 24px; height: 24px; border-radius: 8px;
+    width: 24px; height: 24px; border-radius: 50%;
     border: 1.5px solid rgba(10,91,186,0.38);
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
@@ -910,7 +920,7 @@
     body.desktop .dish-item:hover { background: #F5F0EB; }
     body.desktop .dish-item:active { background: #ECE5DD; }
     body.desktop .dish-check {
-      width: 18px; height: 18px; border-radius: 4px;
+      width: 18px; height: 18px; border-radius: 50%;
       border: 1.5px solid #B0A89F; background: #fff;
       box-shadow: none;
     }
@@ -1070,15 +1080,7 @@
   <!-- MOBILE people badge -->
   <div class="people-badge mobile-only">
     <label>People</label>
-    <select id="people-input">
-      <option value="200">200</option>
-      <option value="250" selected>250</option>
-      <option value="300">300</option>
-      <option value="350">350</option>
-      <option value="400">400</option>
-      <option value="450">450</option>
-      <option value="500">500</option>
-    </select>
+    <input id="people-input" type="number" inputmode="numeric" pattern="[0-9]*" value="250" min="1" max="9999" step="50">
   </div>
 </header>
 
@@ -1236,7 +1238,10 @@ function wireDesktopControls() {
   const dPeople = document.getElementById('people-input-d');
   const mPeople = document.getElementById('people-input');
   if (dPeople) {
-    dPeople.addEventListener('input', () => { renderList(); });
+    dPeople.addEventListener('input', () => {
+      if (mPeople && mPeople.value !== dPeople.value) mPeople.value = dPeople.value;
+      renderList();
+    });
   }
 
   // Show: dropdown ↔ setUnit()
@@ -1446,8 +1451,7 @@ function renderMenu() {
     header.innerHTML = `
       <span class="category-name">${cat}</span>
       <div class="cat-btns">
-        <button class="cat-btn" onclick="catAll('${cat}',event)">All</button>
-        <button class="cat-btn" onclick="catNone('${cat}',event)">None</button>
+        <button class="cat-btn" onclick="catNone('${cat}',event)">Clear</button>
       </div>
       <span class="cat-count">${selCount}/${dishes.length}</span>
       <span class="chevron ${isCollapsed ? '' : 'open'}">›</span>`;
@@ -1467,14 +1471,21 @@ function renderMenu() {
       item.className = 'dish-item' + (isSel ? ' selected' : '');
       item.innerHTML = `
         <div class="dish-check">
-          <svg viewBox="0 0 12 12" fill="none" width="12" height="12">
-            <polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <svg viewBox="0 0 12 12" fill="none" width="8" height="8">
+            <circle cx="6" cy="6" r="5" fill="white"/>
           </svg>
         </div>
         <span class="dish-name">${name}</span>
         <span class="dish-count-badge">${dish.ingredients.length} ing</span>`;
       item.onclick = () => {
-        selected.has(name) ? selected.delete(name) : selected.add(name);
+        if (selected.has(name)) {
+          // Click selected radio again to deselect
+          selected.delete(name);
+        } else {
+          // Radio behavior: clear other dishes in this category, then select this one
+          MENU_ORDER.filter(n => DISHES[n].category === cat).forEach(n => selected.delete(n));
+          selected.add(name);
+        }
         renderMenu();
         updateMenuStats();
         if (isDesktop()) renderList();
@@ -1495,7 +1506,16 @@ function updateMenuStats() {
 }
 function catAll(cat, e)  { e.stopPropagation(); MENU_ORDER.filter(n => DISHES[n].category === cat).forEach(n => selected.add(n));    renderMenu(); if (isDesktop()) renderList(); }
 function catNone(cat, e) { e.stopPropagation(); MENU_ORDER.filter(n => DISHES[n].category === cat).forEach(n => selected.delete(n)); renderMenu(); if (isDesktop()) renderList(); }
-function selectAll() { MENU_ORDER.forEach(n => selected.add(n)); renderMenu(); if (isDesktop()) renderList(); }
+function selectAll() {
+  // Radio behavior: pick the first dish from each category
+  selected.clear();
+  CATEGORIES.forEach(cat => {
+    const first = MENU_ORDER.find(n => DISHES[n].category === cat);
+    if (first) selected.add(first);
+  });
+  renderMenu();
+  if (isDesktop()) renderList();
+}
 function clearAll()  { selected.clear(); renderMenu(); if (isDesktop()) renderList(); }
 
 // ─── Render Shopping List ────────────────────────────────
@@ -1605,8 +1625,15 @@ function ingRow(num, name, impQty, impUnit, metric, convertible, usedIn) {
     <div class="td td-used">${usedIn}</div></div>`;
 }
 
-document.getElementById('people-input').addEventListener('change', () => {
-  if (document.getElementById('view-list').classList.contains('active')) renderList();
+['change', 'input'].forEach(ev => {
+  document.getElementById('people-input').addEventListener(ev, () => {
+    // Keep desktop input in sync if both exist
+    const d = document.getElementById('people-input-d');
+    if (d && d.value !== document.getElementById('people-input').value) {
+      d.value = document.getElementById('people-input').value;
+    }
+    if (document.getElementById('view-list').classList.contains('active') || isDesktop()) renderList();
+  });
 });
 
 // ─── PDF Modal ───────────────────────────────────────────

@@ -205,14 +205,24 @@
     position: relative;
   }
   .people-badge label { font-size: 11px; color: var(--text-soft); font-weight: 600; white-space: nowrap; }
-  .people-badge select {
+  .people-badge select,
+  .people-badge input[type="number"] {
     background: linear-gradient(180deg, #fff, #f3e6d3);
     border: 1px solid rgba(0,0,0,0.06);
     border-radius: var(--radius-pill);
     color: var(--primary);
     font-size: 15px; font-weight: 700; text-align: center; padding: 4px 10px; outline: none;
-    -webkit-appearance: none; appearance: none; cursor: pointer;
+    -webkit-appearance: none; appearance: none; cursor: text;
     box-shadow: 0 1px 2px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.9);
+    width: 70px; -moz-appearance: textfield;
+  }
+  .people-badge input[type="number"]::-webkit-outer-spin-button,
+  .people-badge input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none; margin: 0;
+  }
+  .people-badge input[type="number"]:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(10,91,186,0.18), inset 0 1px 0 rgba(255,255,255,0.9);
   }
 
   /* ── BODY ─────────────────────────────────────────────── */
@@ -1070,15 +1080,7 @@
   <!-- MOBILE people badge -->
   <div class="people-badge mobile-only">
     <label>People</label>
-    <select id="people-input">
-      <option value="200">200</option>
-      <option value="250" selected>250</option>
-      <option value="300">300</option>
-      <option value="350">350</option>
-      <option value="400">400</option>
-      <option value="450">450</option>
-      <option value="500">500</option>
-    </select>
+    <input id="people-input" type="number" inputmode="numeric" pattern="[0-9]*" value="250" min="1" max="9999" step="50">
   </div>
 </header>
 
@@ -1236,7 +1238,10 @@ function wireDesktopControls() {
   const dPeople = document.getElementById('people-input-d');
   const mPeople = document.getElementById('people-input');
   if (dPeople) {
-    dPeople.addEventListener('input', () => { renderList(); });
+    dPeople.addEventListener('input', () => {
+      if (mPeople && mPeople.value !== dPeople.value) mPeople.value = dPeople.value;
+      renderList();
+    });
   }
 
   // Show: dropdown ↔ setUnit()
@@ -1605,8 +1610,15 @@ function ingRow(num, name, impQty, impUnit, metric, convertible, usedIn) {
     <div class="td td-used">${usedIn}</div></div>`;
 }
 
-document.getElementById('people-input').addEventListener('change', () => {
-  if (document.getElementById('view-list').classList.contains('active')) renderList();
+['change', 'input'].forEach(ev => {
+  document.getElementById('people-input').addEventListener(ev, () => {
+    // Keep desktop input in sync if both exist
+    const d = document.getElementById('people-input-d');
+    if (d && d.value !== document.getElementById('people-input').value) {
+      d.value = document.getElementById('people-input').value;
+    }
+    if (document.getElementById('view-list').classList.contains('active') || isDesktop()) renderList();
+  });
 });
 
 // ─── PDF Modal ───────────────────────────────────────────
