@@ -5,368 +5,671 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Prasad Menu – Ingredient Planner</title>
+<meta name="theme-color" content="#fef3e2">
+<title>Prasad Menu – Liquid Glass</title>
 <style>
+  /* ─────────────────────────────────────────────────────────
+     LIQUID GLASS THEME · iOS 26 inspired
+     Frosted panels · animated mesh background · specular highlights
+     ───────────────────────────────────────────────────────── */
   :root {
-    --primary: #8B1A1A;
-    --primary-dark: #6B1010;
-    --accent: #E8820C;
-    --teal: #1A7A6E;
-    --bg: #F5F0EB;
-    --card: #FFFFFF;
-    --text: #1A1A1A;
-    --muted: #6B6B6B;
-    --border: #E0D8D0;
-    --row-alt: #FBF7F2;
-    --shadow: 0 2px 12px rgba(0,0,0,0.10);
-    --radius: 14px;
-    --header-h: 56px;
-    --tab-h: 60px;
-    --safe-bottom: env(safe-area-inset-bottom, 0px);
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); overscroll-behavior: none; }
-  body { display: flex; flex-direction: column; }
+    /* Brand accents (kept from original so categories still match) */
+    --primary:        #8B1A1A;
+    --primary-dark:   #6B1010;
+    --accent:         #E8820C;
+    --teal:           #1A7A6E;
 
-  /* HEADER */
-  .app-header {
-    background: var(--primary);
-    color: #fff;
-    padding: 0 16px;
-    height: var(--header-h);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky; top: 0; z-index: 100;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-    flex-shrink: 0;
+    /* Glass tokens */
+    --glass-bg:       rgba(255, 255, 255, 0.55);
+    --glass-bg-strong:rgba(255, 255, 255, 0.72);
+    --glass-bg-dark:  rgba(28, 22, 18, 0.55);
+    --glass-stroke:   rgba(255, 255, 255, 0.55);
+    --glass-stroke-d: rgba(255, 255, 255, 0.25);
+    --glass-shadow:   0 10px 30px rgba(60, 30, 10, 0.18),
+                      0 1px 0  rgba(255,255,255,0.6) inset,
+                      0 -1px 0 rgba(0,0,0,0.04) inset;
+    --glass-shadow-sm:0 4px 14px rgba(60, 30, 10, 0.12),
+                      0 1px 0 rgba(255,255,255,0.55) inset;
+
+    /* Text */
+    --text:           #1A1208;
+    --text-soft:      #5A4A3A;
+    --muted:          #8C7766;
+    --on-tint:        #fff;
+
+    /* Layout */
+    --radius:         22px;
+    --radius-sm:      14px;
+    --radius-pill:    999px;
+    --header-h:       64px;
+    --tab-h:          74px;
+    --safe-bottom:    env(safe-area-inset-bottom, 0px);
+    --safe-top:       env(safe-area-inset-top, 0px);
+
+    --blur:           saturate(180%) blur(22px);
+    --blur-strong:    saturate(200%) blur(30px);
   }
-  .app-header h1 { font-size: 17px; font-weight: 700; }
-  .app-header .subtitle { font-size: 11px; opacity: 0.75; margin-top: 1px; }
-  .header-left { display: flex; flex-direction: column; }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+    color: var(--text);
+    overscroll-behavior: none;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  body { display: flex; flex-direction: column; position: relative; overflow: hidden; }
+
+  /* ── Animated mesh-gradient background ────────────────── */
+  .bg-canvas {
+    position: fixed; inset: -10%;
+    z-index: -2; pointer-events: none;
+    background:
+      radial-gradient(40% 35% at 15% 20%, rgba(255, 178, 102, 0.85), transparent 60%),
+      radial-gradient(35% 30% at 85% 15%, rgba(232, 130, 12, 0.55), transparent 60%),
+      radial-gradient(45% 40% at 80% 80%, rgba(139, 26, 26, 0.45), transparent 65%),
+      radial-gradient(40% 35% at 20% 90%, rgba(26, 122, 110, 0.55), transparent 65%),
+      linear-gradient(180deg, #FFF4E0 0%, #FCE7CC 100%);
+    animation: bgDrift 22s ease-in-out infinite alternate;
+    filter: saturate(115%);
+  }
+  .bg-grain {
+    position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    opacity: 0.35; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.6  0 0 0 0 0.5  0 0 0 0 0.4  0 0 0 0.4 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  }
+  @keyframes bgDrift {
+    0%   { transform: translate3d(0,0,0)   scale(1); }
+    50%  { transform: translate3d(-2%,1%,0) scale(1.05); }
+    100% { transform: translate3d(2%,-1%,0) scale(1.02); }
+  }
+
+  /* ── Generic glass surface ────────────────────────────── */
+  .glass {
+    background: var(--glass-bg);
+    backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur);
+    border: 1px solid var(--glass-stroke);
+    box-shadow: var(--glass-shadow);
+    border-radius: var(--radius);
+  }
+
+  /* ── HEADER (floating glass bar) ──────────────────────── */
+  .app-header {
+    position: sticky; top: 8px; z-index: 100;
+    margin: calc(8px + var(--safe-top)) 10px 4px;
+    padding: 0 14px;
+    height: var(--header-h);
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--glass-bg-strong);
+    backdrop-filter: var(--blur-strong);
+    -webkit-backdrop-filter: var(--blur-strong);
+    border: 1px solid var(--glass-stroke);
+    border-radius: var(--radius);
+    box-shadow: var(--glass-shadow);
+    flex-shrink: 0;
+    color: var(--text);
+  }
+  .app-header::before {
+    content: ""; position: absolute; inset: 1px 1px auto 1px; height: 50%;
+    border-radius: calc(var(--radius) - 1px) calc(var(--radius) - 1px) 0 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0));
+    pointer-events: none;
+  }
+  .header-left { display: flex; flex-direction: column; gap: 1px; position: relative; }
+  .app-header h1 {
+    font-size: 18px; font-weight: 700; letter-spacing: -0.2px;
+    background: linear-gradient(180deg, #2a1a08, #5a3010);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .app-header .subtitle { font-size: 11px; color: var(--muted); font-weight: 500; }
+
   .people-badge {
     display: flex; align-items: center; gap: 6px;
-    background: rgba(255,255,255,0.15);
-    border: 1px solid rgba(255,255,255,0.3);
-    border-radius: 20px; padding: 4px 10px 4px 6px;
+    background: rgba(255,255,255,0.5);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.65);
+    border-radius: var(--radius-pill);
+    padding: 4px 6px 4px 12px;
+    box-shadow: 0 2px 8px rgba(60,30,10,0.10), inset 0 1px 0 rgba(255,255,255,0.7);
+    position: relative;
   }
-  .people-badge label { font-size: 11px; opacity: 0.85; white-space: nowrap; }
-<<<<<<< HEAD
-  .people-badge input {
-    width: 52px; background: rgba(255,255,255,0.9);
-    border: none; border-radius: 12px; color: var(--primary);
-    font-size: 15px; font-weight: 700; text-align: center; padding: 2px 4px; outline: none;
-=======
+  .people-badge label { font-size: 11px; color: var(--text-soft); font-weight: 600; white-space: nowrap; }
   .people-badge select {
-    background: rgba(255,255,255,0.9);
-    border: none; border-radius: 12px; color: var(--primary);
-    font-size: 15px; font-weight: 700; text-align: center; padding: 2px 6px; outline: none;
+    background: linear-gradient(180deg, #fff, #f3e6d3);
+    border: 1px solid rgba(0,0,0,0.06);
+    border-radius: var(--radius-pill);
+    color: var(--primary);
+    font-size: 15px; font-weight: 700; text-align: center; padding: 4px 10px; outline: none;
     -webkit-appearance: none; appearance: none; cursor: pointer;
->>>>>>> 3f544c1 (Initial commit — Prasad menu planner with Liquid Glass theme)
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.9);
   }
 
-  /* BODY */
-  .app-body { flex: 1; overflow-y: auto; overflow-x: hidden; padding-bottom: calc(var(--tab-h) + var(--safe-bottom) + 8px); }
+  /* ── BODY ─────────────────────────────────────────────── */
+  .app-body {
+    flex: 1; overflow-y: auto; overflow-x: hidden;
+    padding-bottom: calc(var(--tab-h) + var(--safe-bottom) + 24px);
+    padding-top: 4px;
+  }
 
-  /* TABS */
+  /* ── Floating glass tab dock ──────────────────────────── */
   .tab-bar {
-    position: fixed; bottom: 0; left: 0; right: 0;
-    height: calc(var(--tab-h) + var(--safe-bottom));
-    background: #fff; border-top: 1px solid var(--border);
+    position: fixed;
+    bottom: calc(12px + var(--safe-bottom));
+    left: 14px; right: 14px;
+    height: var(--tab-h);
+    background: var(--glass-bg-strong);
+    backdrop-filter: var(--blur-strong);
+    -webkit-backdrop-filter: var(--blur-strong);
+    border: 1px solid var(--glass-stroke);
+    border-radius: 28px;
+    box-shadow: 0 12px 36px rgba(60,30,10,0.22),
+                0 1px 0 rgba(255,255,255,0.65) inset,
+                0 -1px 0 rgba(0,0,0,0.05) inset;
     display: flex; z-index: 100;
-    padding-bottom: var(--safe-bottom);
-    box-shadow: 0 -2px 12px rgba(0,0,0,0.08);
+    overflow: hidden;
+  }
+  .tab-bar::before {
+    content: ""; position: absolute; inset: 1px 1px auto 1px; height: 45%;
+    border-radius: 27px 27px 0 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0));
+    pointer-events: none;
   }
   .tab-btn {
     flex: 1; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 3px;
+    align-items: center; justify-content: center; gap: 4px;
     background: none; border: none; color: var(--muted);
-    font-size: 10px; font-weight: 500; cursor: pointer;
-    transition: color 0.2s; padding-top: 6px;
+    font-size: 10px; font-weight: 600; cursor: pointer;
+    transition: color 0.25s, transform 0.2s;
+    position: relative;
   }
+  .tab-btn svg { width: 22px; height: 22px; transition: transform 0.25s; }
   .tab-btn.active { color: var(--primary); }
-  .tab-btn svg { width: 22px; height: 22px; }
+  .tab-btn.active::after {
+    content: ""; position: absolute; inset: 6px 12px;
+    background: radial-gradient(ellipse at center, rgba(232,130,12,0.18), transparent 70%);
+    border-radius: 18px; z-index: -1;
+  }
+  .tab-btn.active svg { transform: translateY(-1px) scale(1.05); }
 
-  /* VIEWS */
+  /* ── VIEWS ────────────────────────────────────────────── */
   .view { display: none; }
   .view.active { display: block; }
 
-  /* LOADING / ERROR screens */
+  /* ── Splash / loading / error ─────────────────────────── */
   .splash {
     display: flex; flex-direction: column; align-items: center;
     justify-content: center; padding: 60px 24px; text-align: center; gap: 16px;
   }
+  .splash-card {
+    margin: 24px 14px; padding: 32px 22px;
+    background: var(--glass-bg-strong);
+    backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur);
+    border: 1px solid var(--glass-stroke);
+    border-radius: var(--radius);
+    box-shadow: var(--glass-shadow);
+    text-align: center;
+  }
   .splash .icon { font-size: 52px; }
   .splash h2 { font-size: 18px; font-weight: 700; }
-  .splash p { font-size: 14px; color: var(--muted); line-height: 1.6; }
+  .splash p { font-size: 14px; color: var(--text-soft); line-height: 1.6; }
   .splash code {
-    display: block; background: #1e1e1e; color: #4FC3F7;
-    padding: 10px 16px; border-radius: 8px; font-size: 13px;
-    margin: 4px 0; font-family: monospace; text-align: left; word-break: break-all;
+    display: block; background: rgba(20,16,12,0.78); color: #FFD89F;
+    padding: 10px 16px; border-radius: 10px; font-size: 13px;
+    margin: 4px 0; font-family: 'SF Mono', Menlo, monospace; text-align: left; word-break: break-all;
+    backdrop-filter: blur(8px);
   }
   .spinner {
     width: 44px; height: 44px;
-    border: 4px solid rgba(139,26,26,0.2);
-    border-top-color: var(--primary);
+    border: 4px solid rgba(232, 130, 12, 0.22);
+    border-top-color: var(--accent);
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* FILE PICKER (fallback for file://) */
+  /* ── File picker fallback ─────────────────────────────── */
   .file-picker-area {
-    border: 2px dashed var(--border); border-radius: var(--radius);
-    padding: 24px; text-align: center; cursor: pointer;
-    transition: border-color 0.2s; margin: 16px;
+    border: 1.5px dashed rgba(139,26,26,0.35); border-radius: var(--radius);
+    padding: 28px 20px; text-align: center; cursor: pointer;
+    transition: border-color 0.25s, background 0.25s; margin: 16px 14px;
+    background: rgba(255,255,255,0.4);
+    backdrop-filter: blur(14px);
   }
-  .file-picker-area:hover { border-color: var(--primary); }
+  .file-picker-area:hover { border-color: var(--primary); background: rgba(255,255,255,0.6); }
   .file-picker-area input { display: none; }
   .btn-primary {
-    display: inline-block; padding: 10px 24px;
-    background: var(--primary); color: #fff;
-    border: none; border-radius: 24px;
-    font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 10px;
+    display: inline-block; padding: 11px 26px;
+    background: linear-gradient(180deg, #A52424, #6B1010);
+    color: #fff; border: none; border-radius: var(--radius-pill);
+    font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 12px;
+    box-shadow: 0 6px 16px rgba(139,26,26,0.35), inset 0 1px 0 rgba(255,255,255,0.25);
   }
-  .btn-primary:active { background: var(--primary-dark); }
+  .btn-primary:active { transform: scale(0.97); }
 
-  /* MENU VIEW */
-  .menu-toolbar {
-    background: #fff; border-bottom: 1px solid var(--border);
-    padding: 10px 16px; display: flex; gap: 8px; align-items: center;
-    position: sticky; top: var(--header-h); z-index: 50;
+  /* ── MENU TOOLBAR (glass pill bar) ────────────────────── */
+  .menu-toolbar, .list-toolbar {
+    position: sticky;
+    top: calc(var(--header-h) + 12px + var(--safe-top));
+    z-index: 50;
+    margin: 12px 10px 0;
+    padding: 10px 12px;
+    background: var(--glass-bg-strong);
+    backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur);
+    border: 1px solid var(--glass-stroke);
+    border-radius: var(--radius);
+    box-shadow: var(--glass-shadow-sm);
+    display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
   }
+  .list-toolbar { flex-direction: column; align-items: stretch; }
+  .list-toolbar-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
   .btn-sm {
-    padding: 6px 14px; border-radius: 20px;
-    border: 1.5px solid var(--primary); background: #fff;
-    color: var(--primary); font-size: 13px; font-weight: 600; cursor: pointer;
+    padding: 7px 16px; border-radius: var(--radius-pill);
+    border: 1px solid rgba(139,26,26,0.4);
+    background: rgba(255,255,255,0.55);
+    backdrop-filter: blur(10px);
+    color: var(--primary); font-size: 13px; font-weight: 700; cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
   }
-  .btn-sm:active { background: var(--primary); color: #fff; }
-  .btn-sm.filled { background: var(--primary); color: #fff; }
-  .menu-stats { margin-left: auto; font-size: 12px; color: var(--muted); white-space: nowrap; }
+  .btn-sm:active { transform: scale(0.96); }
+  .btn-sm.filled {
+    background: linear-gradient(180deg, #A52424, #6B1010);
+    color: #fff; border-color: transparent;
+    box-shadow: 0 4px 12px rgba(139,26,26,0.35), inset 0 1px 0 rgba(255,255,255,0.25);
+  }
+  .menu-stats { margin-left: auto; font-size: 12px; color: var(--text-soft); white-space: nowrap; font-weight: 600; }
 
-  .category-block { margin: 12px 12px 0; }
-  .category-block:last-child { margin-bottom: 12px; }
+  /* ── Category glass cards ─────────────────────────────── */
+  .category-block {
+    margin: 14px 10px 0;
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--glass-shadow);
+    background: var(--glass-bg);
+    backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur);
+    border: 1px solid var(--glass-stroke);
+    position: relative;
+  }
+  .category-block::before {
+    content: ""; position: absolute; inset: 0 0 auto 0; height: 40%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.45), rgba(255,255,255,0));
+    pointer-events: none;
+  }
+  .category-block:last-child { margin-bottom: 14px; }
+
   .category-header {
-    display: flex; align-items: center;
-    padding: 10px 14px; background: var(--primary);
-    color: #fff; border-radius: var(--radius) var(--radius) 0 0;
-    cursor: pointer; user-select: none; gap: 8px;
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px 14px;
+    color: #fff;
+    cursor: pointer; user-select: none;
+    position: relative;
+    /* The colored layer is set inline via JS using the category color */
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.18), rgba(255,255,255,0)) ,
+      var(--cat-color, #8B1A1A);
+    box-shadow: inset 0 -1px 0 rgba(0,0,0,0.10);
   }
-  .category-header.collapsed { border-radius: var(--radius); }
-  .category-name { font-weight: 700; font-size: 14px; flex: 1; }
-  .cat-btns { display: flex; gap: 5px; }
+  .category-header::after {
+    content: ""; position: absolute; inset: 1px 1px auto 1px; height: 40%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.35), rgba(255,255,255,0));
+    pointer-events: none;
+  }
+  .category-name { font-weight: 700; font-size: 14px; flex: 1; letter-spacing: 0.1px; }
+  .cat-btns { display: flex; gap: 6px; }
   .cat-btn {
-    padding: 3px 9px; border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.5);
-    background: rgba(255,255,255,0.15);
-    color: #fff; font-size: 11px; font-weight: 600; cursor: pointer;
+    padding: 4px 11px; border-radius: var(--radius-pill);
+    border: 1px solid rgba(255,255,255,0.55);
+    background: rgba(255,255,255,0.18);
+    backdrop-filter: blur(8px);
+    color: #fff; font-size: 11px; font-weight: 700; cursor: pointer;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.4);
   }
-  .cat-btn:active { background: rgba(255,255,255,0.35); }
+  .cat-btn:active { background: rgba(255,255,255,0.4); }
   .cat-count {
-    background: rgba(255,255,255,0.25); border-radius: 10px;
-    padding: 2px 8px; font-size: 11px; font-weight: 700;
-    min-width: 28px; text-align: center;
+    background: rgba(0,0,0,0.20); border-radius: var(--radius-pill);
+    padding: 3px 10px; font-size: 11px; font-weight: 700;
+    min-width: 36px; text-align: center;
+    border: 1px solid rgba(255,255,255,0.25);
   }
-  .chevron { transition: transform 0.25s; font-size: 13px; }
+  .chevron { transition: transform 0.3s cubic-bezier(.4,1.2,.5,1); font-size: 14px; opacity: 0.9; }
   .chevron.open { transform: rotate(90deg); }
-  .category-items {
-    background: var(--card); border-radius: 0 0 var(--radius) var(--radius);
-    overflow: hidden; border: 1px solid var(--border); border-top: none;
-  }
+
+  .category-items { background: transparent; }
   .category-items.collapsed { display: none; }
+
   .dish-item {
-    display: flex; align-items: center;
-    padding: 12px 14px; border-bottom: 1px solid var(--border);
-    gap: 12px; transition: background 0.1s;
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.35);
+    transition: background 0.15s;
+    position: relative;
   }
   .dish-item:last-child { border-bottom: none; }
-  .dish-item:active { background: var(--row-alt); }
+  .dish-item:active { background: rgba(255,255,255,0.45); }
   .dish-check {
-    width: 22px; height: 22px; border-radius: 6px;
-    border: 2px solid var(--border);
+    width: 24px; height: 24px; border-radius: 8px;
+    border: 1.5px solid rgba(139,26,26,0.35);
     display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0; transition: all 0.15s; background: #fff;
+    flex-shrink: 0;
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(6px);
+    transition: all 0.2s cubic-bezier(.4,1.4,.5,1);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
   }
-  .dish-item.selected .dish-check { background: var(--primary); border-color: var(--primary); }
+  .dish-item.selected .dish-check {
+    background: linear-gradient(180deg, #C53030, #8B1A1A);
+    border-color: transparent;
+    box-shadow: 0 3px 8px rgba(139,26,26,0.4), inset 0 1px 0 rgba(255,255,255,0.3);
+    transform: scale(1.05);
+  }
   .dish-check svg { display: none; }
   .dish-item.selected .dish-check svg { display: block; }
-  .dish-name { font-size: 15px; font-weight: 500; flex: 1; }
+  .dish-name { font-size: 15px; font-weight: 500; flex: 1; color: var(--text); }
   .dish-count-badge {
-    font-size: 11px; color: var(--muted);
-    background: var(--row-alt); padding: 2px 8px; border-radius: 10px;
+    font-size: 11px; color: var(--text-soft); font-weight: 600;
+    background: rgba(255,255,255,0.6); padding: 3px 9px; border-radius: var(--radius-pill);
+    border: 1px solid rgba(255,255,255,0.7);
   }
 
-  /* SHOPPING LIST */
-  .list-toolbar {
-    background: #fff; border-bottom: 1px solid var(--border);
-    padding: 10px 12px; display: flex; flex-direction: column; gap: 8px;
-    position: sticky; top: var(--header-h); z-index: 50;
-  }
-  .list-toolbar-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  /* ── Shopping list — segmented control ────────────────── */
   .unit-seg {
-    display: flex; background: var(--bg);
-    border-radius: 20px; border: 1.5px solid var(--border); overflow: hidden;
+    display: flex;
+    background: rgba(255,255,255,0.4);
+    backdrop-filter: blur(14px);
+    border-radius: var(--radius-pill);
+    border: 1px solid rgba(255,255,255,0.6);
+    overflow: hidden;
+    padding: 3px;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
   }
   .unit-seg button {
-    padding: 6px 12px; border: none; background: transparent;
-    font-size: 12px; font-weight: 600; color: var(--muted); cursor: pointer;
+    padding: 6px 14px; border: none; background: transparent;
+    font-size: 12px; font-weight: 700; color: var(--text-soft); cursor: pointer;
+    border-radius: var(--radius-pill);
+    transition: all 0.25s cubic-bezier(.4,1,.5,1);
   }
-  .unit-seg button.active { background: var(--primary); color: #fff; border-radius: 18px; }
+  .unit-seg button.active {
+    background: linear-gradient(180deg, #fff, #f3e6d3);
+    color: var(--primary);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.9);
+  }
+
   .summary-pill {
-    background: var(--primary); color: #fff;
-    border-radius: 20px; padding: 5px 12px;
-    font-size: 11px; font-weight: 600; flex-shrink: 0;
+    background: linear-gradient(180deg, #A52424, #6B1010);
+    color: #fff; border-radius: var(--radius-pill);
+    padding: 6px 14px; font-size: 11px; font-weight: 700; flex-shrink: 0;
+    box-shadow: 0 3px 10px rgba(139,26,26,0.30), inset 0 1px 0 rgba(255,255,255,0.25);
   }
   .pdf-btn {
-    margin-left: auto; padding: 7px 14px;
-    background: var(--accent); color: #fff;
-    border: none; border-radius: 20px;
+    margin-left: auto; padding: 8px 16px;
+    background: linear-gradient(180deg, #F39820, #C06A08);
+    color: #fff; border: none; border-radius: var(--radius-pill);
     font-size: 12px; font-weight: 700; cursor: pointer;
-    display: flex; align-items: center; gap: 5px; flex-shrink: 0;
+    display: flex; align-items: center; gap: 6px; flex-shrink: 0;
+    box-shadow: 0 4px 14px rgba(232,130,12,0.4), inset 0 1px 0 rgba(255,255,255,0.3);
+    transition: transform 0.15s;
   }
-  .pdf-btn:active { background: #c06a08; }
+  .pdf-btn:active { transform: scale(0.97); }
 
-  /* ── PDF MODAL ── */
+  .list-toolbar label { color: var(--text-soft); font-weight: 500; }
+  .list-toolbar input[type="checkbox"] {
+    accent-color: var(--primary); width: 16px; height: 16px;
+  }
+
+  /* ── Section blocks (combined / per-dish) ─────────────── */
+  .section-block {
+    margin: 12px 10px 0;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--glass-bg-strong);
+    backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur);
+    border: 1px solid var(--glass-stroke);
+    box-shadow: var(--glass-shadow);
+    position: relative;
+  }
+  .section-block:last-child { margin-bottom: 14px; }
+
+  .combined-header {
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.18), rgba(255,255,255,0)),
+      linear-gradient(180deg, #3D5166, #2C3E50);
+    color: #fff; padding: 12px 14px; font-weight: 700; font-size: 14px;
+    display: flex; align-items: center; gap: 8px;
+    position: relative;
+  }
+  .combined-stats {
+    font-size: 11px; font-weight: 500; opacity: 0.85;
+    margin-left: auto; text-align: right;
+  }
+  .dish-section-header {
+    color: #fff; padding: 10px 14px;
+    font-weight: 700; font-size: 13px;
+    display: flex; align-items: center; gap: 8px;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.20), rgba(255,255,255,0)),
+      var(--cat-color, #8B1A1A);
+    position: relative;
+  }
+  .ing-count { font-size: 11px; font-weight: 500; opacity: 0.85; margin-left: auto; }
+
+  .table-header-row {
+    display: grid; color: rgba(255,255,255,0.95);
+    font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.4px;
+    background: linear-gradient(180deg, #4D617A, #3D5166);
+  }
+  .table-header-row.both    { grid-template-columns: 28px 1fr 62px 38px 62px 38px 80px; }
+  .table-header-row.imperial{ grid-template-columns: 28px 1fr 80px 48px 80px; }
+  .table-header-row.metric  { grid-template-columns: 28px 1fr 80px 48px 80px; }
+  .th { padding: 8px 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .th-imp { background: linear-gradient(180deg, rgba(232,131,12,0.55), rgba(232,131,12,0.30)); }
+  .th-met { background: linear-gradient(180deg, rgba(26,122,110,0.55), rgba(26,122,110,0.30)); }
+
+  .ing-row {
+    display: grid; align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,0.35);
+    font-size: 13px; color: var(--text);
+  }
+  .ing-row.both    { grid-template-columns: 28px 1fr 62px 38px 62px 38px 80px; }
+  .ing-row.imperial{ grid-template-columns: 28px 1fr 80px 48px 80px; }
+  .ing-row.metric  { grid-template-columns: 28px 1fr 80px 48px 80px; }
+  .ing-row:nth-child(even) { background: rgba(255,255,255,0.30); }
+  .ing-row:last-child { border-bottom: none; }
+  .td { padding: 9px 6px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .td-num { font-weight: 700; color: var(--muted); font-size: 11px; text-align: center; }
+  .td-qty-imp { color: var(--accent); font-weight: 700; text-align: right; }
+  .td-qty-met { color: var(--teal); font-weight: 700; text-align: right; }
+  .td-unit { color: var(--muted); font-size: 11px; font-weight: 500; }
+  .td-used { color: var(--text-soft); font-size: 11px; }
+
+  /* ── PDF MODAL ────────────────────────────────────────── */
   .modal-overlay {
     position: fixed; inset: 0; z-index: 200;
-    background: rgba(0,0,0,0.55);
+    background: rgba(20, 12, 4, 0.40);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     display: flex; align-items: flex-end;
     opacity: 0; pointer-events: none;
-    transition: opacity 0.25s;
+    transition: opacity 0.3s;
   }
   .modal-overlay.open { opacity: 1; pointer-events: all; }
   .modal-sheet {
-    width: 100%; background: #fff;
-    border-radius: 20px 20px 0 0;
-    padding: 20px 20px calc(20px + var(--safe-bottom));
+    width: 100%;
+    background: var(--glass-bg-strong);
+    backdrop-filter: var(--blur-strong);
+    -webkit-backdrop-filter: var(--blur-strong);
+    border: 1px solid var(--glass-stroke);
+    border-bottom: none;
+    border-radius: 28px 28px 0 0;
+    padding: 20px 22px calc(22px + var(--safe-bottom));
     transform: translateY(100%);
-    transition: transform 0.3s cubic-bezier(.32,1,.23,1);
-    box-shadow: 0 -4px 24px rgba(0,0,0,0.15);
+    transition: transform 0.35s cubic-bezier(.22,1,.36,1);
+    box-shadow: 0 -10px 50px rgba(0,0,0,0.25);
+    position: relative;
+  }
+  .modal-sheet::before {
+    content: ""; position: absolute; inset: 1px 1px auto 1px; height: 30%;
+    border-radius: 27px 27px 0 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.5), rgba(255,255,255,0));
+    pointer-events: none;
   }
   .modal-overlay.open .modal-sheet { transform: translateY(0); }
   .modal-handle {
-    width: 40px; height: 4px; background: #ddd;
-    border-radius: 2px; margin: 0 auto 18px;
+    width: 44px; height: 5px;
+    background: rgba(0,0,0,0.18);
+    border-radius: 3px; margin: 0 auto 18px;
   }
-  .modal-title { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
-  .modal-sub   { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
+  .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; color: var(--text); }
+  .modal-sub   { font-size: 13px; color: var(--text-soft); margin-bottom: 16px; line-height: 1.4; }
   .modal-input {
-    width: 100%; padding: 12px 14px;
-    border: 2px solid var(--border); border-radius: 12px;
-    font-size: 16px; outline: none; transition: border-color 0.2s;
-    background: var(--bg);
+    width: 100%; padding: 13px 16px;
+    border: 1px solid rgba(255,255,255,0.6);
+    background: rgba(255,255,255,0.55);
+    backdrop-filter: blur(10px);
+    border-radius: 14px;
+    font-size: 16px; outline: none;
+    transition: all 0.25s;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), inset 0 -1px 0 rgba(0,0,0,0.04);
   }
-  .modal-input:focus { border-color: var(--primary); background: #fff; }
-  .modal-actions { display: flex; gap: 10px; margin-top: 14px; }
+  .modal-input:focus {
+    border-color: var(--accent);
+    background: rgba(255,255,255,0.85);
+    box-shadow: 0 0 0 4px rgba(232,130,12,0.18), inset 0 1px 0 rgba(255,255,255,0.9);
+  }
+  .modal-actions { display: flex; gap: 10px; margin-top: 16px; }
   .modal-cancel {
-    flex: 1; padding: 12px; border: 1.5px solid var(--border);
-    background: #fff; border-radius: 12px; font-size: 15px;
-    font-weight: 600; cursor: pointer; color: var(--muted);
+    flex: 1; padding: 13px;
+    border: 1px solid rgba(0,0,0,0.10);
+    background: rgba(255,255,255,0.5);
+    backdrop-filter: blur(10px);
+    border-radius: 14px; font-size: 15px;
+    font-weight: 700; cursor: pointer; color: var(--text-soft);
   }
   .modal-go {
-    flex: 2; padding: 12px; background: var(--primary);
-    color: #fff; border: none; border-radius: 12px;
+    flex: 2; padding: 13px;
+    background: linear-gradient(180deg, #A52424, #6B1010);
+    color: #fff; border: none; border-radius: 14px;
     font-size: 15px; font-weight: 700; cursor: pointer;
     display: flex; align-items: center; justify-content: center; gap: 8px;
+    box-shadow: 0 6px 20px rgba(139,26,26,0.40), inset 0 1px 0 rgba(255,255,255,0.25);
+    transition: transform 0.15s;
   }
-  .modal-go:disabled { background: #bbb; cursor: default; }
-  .modal-go:active:not(:disabled) { background: var(--primary-dark); }
+  .modal-go:disabled { background: linear-gradient(180deg, #c8b8a8, #a89888); cursor: default; box-shadow: none; }
+  .modal-go:active:not(:disabled) { transform: scale(0.98); }
 
-  /* result card inside modal */
   .result-card {
-    margin-top: 14px; border-radius: 12px;
-    background: #f0faf4; border: 1.5px solid #b2dfc5;
+    margin-top: 16px; border-radius: 14px;
+    background: rgba(220, 250, 230, 0.55);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(140, 220, 170, 0.6);
     padding: 14px; display: none;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
   }
   .result-card.show { display: block; }
-  .result-card h4 { font-size: 13px; font-weight: 700; color: #1A6B3A; margin-bottom: 8px; }
+  .result-card h4 { font-size: 13px; font-weight: 700; color: #1A6B3A; margin-bottom: 10px; }
   .url-row {
     display: flex; align-items: center; gap: 8px;
-    background: #fff; border: 1px solid #ddd;
-    border-radius: 8px; padding: 8px 10px; margin-bottom: 6px;
+    background: rgba(255,255,255,0.75);
+    border: 1px solid rgba(255,255,255,0.6);
+    border-radius: 10px; padding: 9px 11px; margin-bottom: 6px;
   }
   .url-label { font-size: 10px; font-weight: 700; color: var(--muted); min-width: 42px; }
-  .url-text  { font-size: 11px; color: #1A5A8B; flex: 1; word-break: break-all; font-family: monospace; }
+  .url-text  { font-size: 11px; color: #1A5A8B; flex: 1; word-break: break-all; font-family: 'SF Mono', Menlo, monospace; }
   .copy-btn  {
-    padding: 4px 8px; background: var(--primary); color: #fff;
-    border: none; border-radius: 6px; font-size: 11px; font-weight: 600;
-    cursor: pointer; flex-shrink: 0;
+    padding: 5px 10px;
+    background: linear-gradient(180deg, #A52424, #6B1010);
+    color: #fff; border: none; border-radius: 7px;
+    font-size: 11px; font-weight: 700; cursor: pointer; flex-shrink: 0;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.25);
   }
-  .copy-btn:active { background: var(--primary-dark); }
+  .copy-btn:active { transform: scale(0.95); }
   .gen-spinner {
     display: none; width: 18px; height: 18px;
     border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff;
     border-radius: 50%; animation: spin 0.7s linear infinite;
   }
-  .no-selection { text-align: center; padding: 60px 20px; color: var(--muted); }
-  .no-selection .icon { font-size: 48px; margin-bottom: 12px; }
-  .no-selection p { font-size: 15px; }
 
-  .combined-header {
-    background: #2C3E50; color: #fff;
-    padding: 10px 14px; font-weight: 700; font-size: 14px;
-    display: flex; align-items: center; gap: 8px;
+  .no-selection {
+    text-align: center; padding: 60px 24px; color: var(--text-soft);
+    margin: 24px 14px;
+    background: var(--glass-bg);
+    backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur);
+    border: 1px solid var(--glass-stroke);
+    border-radius: var(--radius);
+    box-shadow: var(--glass-shadow-sm);
   }
-  .combined-stats { font-size: 11px; font-weight: 400; opacity: 0.8; margin-left: auto; text-align: right; }
-  .dish-section-header {
-    color: #fff; padding: 8px 14px;
-    font-weight: 700; font-size: 13px;
-    display: flex; align-items: center; gap: 8px;
+  .no-selection .icon { font-size: 52px; margin-bottom: 12px; }
+  .no-selection p { font-size: 15px; line-height: 1.5; }
+
+  /* ── DARK MODE TWEAKS ─────────────────────────────────── */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --glass-bg:       rgba(40, 28, 20, 0.50);
+      --glass-bg-strong:rgba(40, 28, 20, 0.65);
+      --glass-stroke:   rgba(255, 255, 255, 0.18);
+      --text:           #F5EADC;
+      --text-soft:      #C8B398;
+      --muted:          #9C8770;
+      --glass-shadow:   0 10px 30px rgba(0,0,0,0.45),
+                        0 1px 0 rgba(255,255,255,0.10) inset;
+      --glass-shadow-sm:0 4px 14px rgba(0,0,0,0.30),
+                        0 1px 0 rgba(255,255,255,0.10) inset;
+    }
+    .bg-canvas {
+      background:
+        radial-gradient(40% 35% at 15% 20%, rgba(255, 140, 60, 0.55), transparent 60%),
+        radial-gradient(35% 30% at 85% 15%, rgba(232, 130, 12, 0.35), transparent 60%),
+        radial-gradient(45% 40% at 80% 80%, rgba(139, 26, 26, 0.45), transparent 65%),
+        radial-gradient(40% 35% at 20% 90%, rgba(26, 122, 110, 0.45), transparent 65%),
+        linear-gradient(180deg, #1a1108 0%, #261810 100%);
+    }
+    .app-header h1 {
+      background: linear-gradient(180deg, #FFE4B0, #E8A060);
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    .people-badge select { background: linear-gradient(180deg, #4a3520, #3a2818); color: #FFD89F; }
+    .dish-name { color: var(--text); }
+    .ing-row { color: var(--text); }
+    .dish-count-badge { background: rgba(255,255,255,0.10); border-color: rgba(255,255,255,0.18); color: var(--text-soft); }
+    .modal-input { background: rgba(40,28,20,0.55); color: var(--text); }
+    .modal-cancel { background: rgba(60,40,28,0.55); color: var(--text-soft); }
+    .url-row { background: rgba(40,28,20,0.55); border-color: rgba(255,255,255,0.18); }
+    .url-text { color: #8FC8FF; }
   }
-  .ing-count { font-size: 11px; font-weight: 500; opacity: 0.8; margin-left: auto; }
 
-  .table-header-row {
-    display: grid; color: #fff;
-    font-size: 11px; font-weight: 600;
-    text-transform: uppercase; letter-spacing: 0.3px;
-    background: #3D5166;
-  }
-  .table-header-row.both    { grid-template-columns: 24px 1fr 62px 38px 62px 38px 80px; }
-  .table-header-row.imperial{ grid-template-columns: 24px 1fr 80px 48px 80px; }
-  .table-header-row.metric  { grid-template-columns: 24px 1fr 80px 48px 80px; }
-  .th { padding: 7px 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .th-imp { background: rgba(231,131,12,0.3); }
-  .th-met { background: rgba(26,122,110,0.3); }
-
-  .ing-row { display: grid; align-items: center; border-bottom: 1px solid var(--border); font-size: 13px; }
-  .ing-row.both    { grid-template-columns: 24px 1fr 62px 38px 62px 38px 80px; }
-  .ing-row.imperial{ grid-template-columns: 24px 1fr 80px 48px 80px; }
-  .ing-row.metric  { grid-template-columns: 24px 1fr 80px 48px 80px; }
-  .ing-row:nth-child(even) { background: var(--row-alt); }
-  .td { padding: 8px 5px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-  .td-num { font-weight: 600; color: var(--muted); font-size: 11px; text-align: center; }
-  .td-qty-imp { color: var(--accent); font-weight: 700; text-align: right; }
-  .td-qty-met { color: var(--teal); font-weight: 700; text-align: right; }
-  .td-unit { color: var(--muted); font-size: 11px; }
-  .td-used { color: var(--muted); font-size: 11px; }
-
-  .section-block { margin: 10px 10px 0; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
-  .section-block:last-child { margin-bottom: 10px; }
-
+  /* ── Print ────────────────────────────────────────────── */
   @media print {
-    .app-header, .tab-bar, .menu-toolbar, .list-toolbar, .pdf-btn { display: none !important; }
+    .bg-canvas, .bg-grain, .app-header, .tab-bar, .menu-toolbar, .list-toolbar, .pdf-btn { display: none !important; }
     body { background: #fff; }
     .app-body { overflow: visible; padding: 0; }
     #view-menu { display: none !important; }
     #view-list { display: block !important; }
-    .section-block { page-break-inside: avoid; box-shadow: none; border: 1px solid #ccc; margin: 6px 0; }
-    .ing-row { font-size: 11px; }
+    .section-block { page-break-inside: avoid; box-shadow: none; border: 1px solid #ccc; margin: 6px 0; backdrop-filter: none; background: #fff; }
+    .ing-row { font-size: 11px; background: #fff !important; }
     @page { margin: 1cm; size: A4; }
   }
 </style>
 </head>
 <body>
 
+<div class="bg-canvas"></div>
+<div class="bg-grain"></div>
+
 <header class="app-header">
   <div class="header-left">
     <h1>🍛 Prasad Menu</h1>
-    <div class="subtitle">Ingredient Planner</div>
+    <div class="subtitle">Liquid Ingredient Planner</div>
   </div>
   <div class="people-badge">
-    <label>People:</label>
-<<<<<<< HEAD
-    <input type="number" id="people-input" value="200" min="1" max="10000">
-=======
+    <label>People</label>
     <select id="people-input">
       <option value="200">200</option>
       <option value="250" selected>250</option>
@@ -376,14 +679,13 @@
       <option value="450">450</option>
       <option value="500">500</option>
     </select>
->>>>>>> 3f544c1 (Initial commit — Prasad menu planner with Liquid Glass theme)
   </div>
 </header>
 
 <div class="app-body">
   <!-- LOADING SCREEN -->
   <div class="view active" id="view-loading">
-    <div class="splash">
+    <div class="splash-card splash">
       <div class="spinner"></div>
       <h2>Loading Dishes…</h2>
       <p>Reading CSV files from the dishes/ folder</p>
@@ -392,21 +694,21 @@
 
   <!-- FILE:// ERROR SCREEN -->
   <div class="view" id="view-error">
-    <div class="splash">
+    <div class="splash-card splash">
       <div class="icon">⚠️</div>
       <h2>Open via a local server</h2>
       <p>Browsers block CSV files from being read when you open HTML directly from disk.<br><br>
       Run this one command in Terminal from your <strong>Prasad</strong> folder:</p>
       <code>cd ~/Documents/Claude/Projects/Prasad</code>
       <code>python3 -m http.server 8080</code>
-      <p>Then open <strong>http://localhost:8080/prasad_planner.html</strong> in your browser.</p>
-      <p style="margin-top:12px; font-size:13px; color:var(--muted)">
+      <p>Then open <strong>http://localhost:8080/prasad_planner_liquid.html</strong> in your browser.</p>
+      <p style="margin-top:12px; font-size:13px; color:var(--text-soft)">
         — or — select all your CSV files manually:
       </p>
     </div>
     <div class="file-picker-area" id="picker-area" onclick="document.getElementById('csv-files').click()">
       <div style="font-size:32px">📂</div>
-      <p style="font-size:14px; margin:8px 0; color:var(--muted)">Tap to select all CSV files<br>(menu.csv + all files in dishes/ folder)</p>
+      <p style="font-size:14px; margin:8px 0; color:var(--text-soft)">Tap to select all CSV files<br>(menu.csv + all files in dishes/ folder)</p>
       <button class="btn-primary">Choose CSV Files</button>
       <input type="file" id="csv-files" accept=".csv" multiple>
     </div>
@@ -442,11 +744,11 @@
         </button>
       </div>
       <div class="list-toolbar-row">
-        <label style="font-size:12px; color:var(--muted)">Show:</label>
-        <label style="display:flex;align-items:center;gap:4px;font-size:12px">
+        <label style="font-size:12px">Show:</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px">
           <input type="checkbox" id="show-combined" checked onchange="renderList()"> Combined list
         </label>
-        <label style="display:flex;align-items:center;gap:4px;font-size:12px">
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px">
           <input type="checkbox" id="show-perdish" checked onchange="renderList()"> Per-dish
         </label>
       </div>
@@ -508,9 +810,9 @@
 
 <script>
 // ─── State ───────────────────────────────────────────────
-let DISHES    = {};   // { dishName: { category, file, ingredients:[{name,qty250,unit}] } }
-let MENU_ORDER = [];  // array of dish names in order from menu.csv
-let CATEGORIES = [];  // ordered unique categories
+let DISHES    = {};
+let MENU_ORDER = [];
+let CATEGORIES = [];
 let selected   = new Set();
 let unitMode   = 'both';
 let collapsed  = {};
@@ -529,7 +831,6 @@ function parseCSV(text) {
   const lines = text.trim().split(/\r?\n/);
   const headers = lines[0].split(',').map(h => h.trim());
   return lines.slice(1).filter(l => l.trim()).map(line => {
-    // handle commas inside quoted fields
     const vals = []; let cur = ''; let inQ = false;
     for (let c of line) {
       if (c === '"') { inQ = !inQ; }
@@ -545,16 +846,13 @@ function parseCSV(text) {
 
 // ─── Load via fetch (http://) ────────────────────────────
 async function loadViaFetch() {
-  // Load menu.csv
   const menuRes  = await fetch('menu.csv');
   const menuText = await menuRes.text();
   const menuRows = parseCSV(menuText);
 
-  // Extract ordered categories
   const catSeen = new Set();
   menuRows.forEach(r => { if (!catSeen.has(r.category)) { CATEGORIES.push(r.category); catSeen.add(r.category); } });
 
-  // Load each dish CSV in parallel
   await Promise.all(menuRows.map(async row => {
     const res  = await fetch('dishes/' + row.file);
     const text = await res.text();
@@ -563,14 +861,13 @@ async function loadViaFetch() {
     MENU_ORDER.push(row.dish);
   }));
 
-  // Keep MENU_ORDER in menu.csv order
   MENU_ORDER = menuRows.map(r => r.dish);
 }
 
 // ─── Load via File picker (file://) ─────────────────────
 function loadViaFiles(files) {
   return new Promise((resolve, reject) => {
-    const fileMap = {}; // name → File
+    const fileMap = {};
     for (const f of files) fileMap[f.name] = f;
 
     const readFile = f => new Promise((res, rej) => {
@@ -607,7 +904,6 @@ async function boot() {
   const isFileProtocol = window.location.protocol === 'file:';
 
   if (!isFileProtocol) {
-    // Happy path: served via http, fetch CSVs directly
     try {
       await loadViaFetch();
       showApp();
@@ -615,7 +911,6 @@ async function boot() {
       showError(`Failed to load CSV files: ${e.message}`);
     }
   } else {
-    // file:// → show instructions + file picker fallback
     switchView('error');
   }
 }
@@ -632,7 +927,6 @@ function showError(msg) {
   switchView('error');
 }
 
-// File picker handler
 document.getElementById('csv-files').addEventListener('change', async function() {
   if (!this.files.length) return;
   try {
@@ -704,7 +998,7 @@ function renderMenu() {
 
     const header = document.createElement('div');
     header.className = 'category-header' + (isCollapsed ? ' collapsed' : '');
-    header.style.background = color;
+    header.style.setProperty('--cat-color', color);
     header.innerHTML = `
       <span class="category-name">${cat}</span>
       <div class="cat-btns">
@@ -767,7 +1061,6 @@ function renderList() {
   const container    = document.getElementById('list-container');
   const selDishes    = MENU_ORDER.filter(n => selected.has(n));
 
-  // summary pill
   const totalIng = new Set();
   selDishes.forEach(n => DISHES[n].ingredients.forEach(i => totalIng.add(i.name.toLowerCase())));
   document.getElementById('list-summary').textContent =
@@ -809,7 +1102,7 @@ function renderList() {
       selDishes.filter(n => DISHES[n].category === cat).forEach(dishName => {
         const dish = DISHES[dishName];
         html += `<div class="section-block">
-          <div class="dish-section-header" style="background:${catColor(cat)}">
+          <div class="dish-section-header" style="--cat-color:${catColor(cat)}">
             ${dishName}
             <span class="ing-count">${dish.ingredients.length} ingredients · ${people} people</span>
           </div>
@@ -867,12 +1160,7 @@ function ingRow(num, name, impQty, impUnit, metric, convertible, usedIn) {
     <div class="td td-used">${usedIn}</div></div>`;
 }
 
-// People input
-<<<<<<< HEAD
-document.getElementById('people-input').addEventListener('input', () => {
-=======
 document.getElementById('people-input').addEventListener('change', () => {
->>>>>>> 3f544c1 (Initial commit — Prasad menu planner with Liquid Glass theme)
   if (document.getElementById('view-list').classList.contains('active')) renderList();
 });
 
@@ -909,7 +1197,6 @@ async function generatePdf() {
     const people    = getPeople();
     const selDishes = MENU_ORDER.filter(n => selected.has(n));
 
-    // Build payload — send data, let the server make the PDF
     const payload = {
       filename:     name,
       people:       people,
@@ -938,7 +1225,6 @@ async function generatePdf() {
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || 'Unknown error');
 
-    // Show shareable links
     document.getElementById('url-local').textContent = data.url_local;
     document.getElementById('url-wifi').textContent  = data.url_wifi;
     document.getElementById('result-card').classList.add('show');
@@ -962,7 +1248,6 @@ function copyUrl(id) {
     btn.textContent = 'Copied!';
     setTimeout(() => btn.textContent = 'Copy', 1500);
   }).catch(() => {
-    // fallback
     const inp = document.createElement('input');
     inp.value = text;
     document.body.appendChild(inp);
@@ -970,131 +1255,6 @@ function copyUrl(id) {
     document.execCommand('copy');
     document.body.removeChild(inp);
   });
-}
-
-// Build a clean HTML for PDF rendering
-function buildPrintHtml(selDishes, people) {
-  const showCombined = document.getElementById('show-combined').checked;
-  const showPerdish  = document.getElementById('show-perdish').checked;
-  const unitLabel    = { both: 'Imperial & Metric', imperial: 'Imperial (lb)', metric: 'Metric (kg/g)' }[unitMode];
-
-  let body = `
-    <div style="font-family:Arial,sans-serif;color:#1a1a1a;">
-    <div style="background:#8B1A1A;color:#fff;padding:12px 16px;border-radius:8px 8px 0 0;margin-bottom:4px;">
-      <div style="font-size:20px;font-weight:700;">🍛 Prasad Menu – Ingredient Planner</div>
-      <div style="font-size:12px;opacity:0.8;margin-top:2px;">${selDishes.length} dishes · ${people} people · ${unitLabel}</div>
-    </div>`;
-
-  const tblStyle  = 'width:100%;border-collapse:collapse;font-size:12px;margin-bottom:14px;';
-  const thStyle   = (bg) => `padding:6px 7px;text-align:left;background:${bg};color:#fff;font-size:10px;text-transform:uppercase;`;
-  const tdStyle   = (right) => `padding:5px 7px;border-bottom:1px solid #e8e0d8;${right ? 'text-align:right;' : ''}`;
-
-  function tableRows(ingredients) {
-    return ingredients.map((ing, i) => {
-      const qty    = calcQty(ing.qty250, people);
-      const fQty   = fmtNum(qty);
-      const metric = toMetric(qty, ing.unit);
-      const conv   = isConvertible(ing.unit);
-      const mQ = conv ? metric.val : fQty;
-      const mU = conv ? metric.unit : ing.unit;
-      const bg = i % 2 === 0 ? '#fff' : '#fbf7f2';
-
-      if (unitMode === 'both')
-        return `<tr style="background:${bg}">
-          <td style="${tdStyle(true)}">${i+1}</td>
-          <td style="${tdStyle(false)}">${ing.name}</td>
-          <td style="${tdStyle(true)};color:#E8820C;font-weight:700">${fQty}</td>
-          <td style="${tdStyle(false)};color:#888">${ing.unit}</td>
-          <td style="${tdStyle(true)};color:#1A7A6E;font-weight:700">${mQ}</td>
-          <td style="${tdStyle(false)};color:#888">${mU}</td>
-        </tr>`;
-      if (unitMode === 'imperial')
-        return `<tr style="background:${bg}">
-          <td style="${tdStyle(true)}">${i+1}</td>
-          <td style="${tdStyle(false)}">${ing.name}</td>
-          <td style="${tdStyle(true)};color:#E8820C;font-weight:700">${fQty}</td>
-          <td style="${tdStyle(false)};color:#888">${ing.unit}</td>
-        </tr>`;
-      return `<tr style="background:${bg}">
-        <td style="${tdStyle(true)}">${i+1}</td>
-        <td style="${tdStyle(false)}">${ing.name}</td>
-        <td style="${tdStyle(true)};color:#1A7A6E;font-weight:700">${mQ}</td>
-        <td style="${tdStyle(false)};color:#888">${mU}</td>
-      </tr>`;
-    }).join('');
-  }
-
-  function tableHead(withUsedIn) {
-    if (unitMode === 'both')
-      return `<tr><th style="${thStyle('#3D5166')}">#</th><th style="${thStyle('#3D5166')}">Ingredient</th>
-        <th style="${thStyle('#c06a08')}">lb Qty</th><th style="${thStyle('#c06a08')}">Unit</th>
-        <th style="${thStyle('#15695e')}">Metric</th><th style="${thStyle('#15695e')}">Unit</th>
-        ${withUsedIn ? `<th style="${thStyle('#3D5166')}">Used in</th>` : ''}</tr>`;
-    if (unitMode === 'imperial')
-      return `<tr><th style="${thStyle('#3D5166')}">#</th><th style="${thStyle('#3D5166')}">Ingredient</th>
-        <th style="${thStyle('#c06a08')}">Quantity</th><th style="${thStyle('#c06a08')}">Unit</th>
-        ${withUsedIn ? `<th style="${thStyle('#3D5166')}">Used in</th>` : ''}</tr>`;
-    return `<tr><th style="${thStyle('#3D5166')}">#</th><th style="${thStyle('#3D5166')}">Ingredient</th>
-      <th style="${thStyle('#15695e')}">Quantity</th><th style="${thStyle('#15695e')}">Unit</th>
-      ${withUsedIn ? `<th style="${thStyle('#3D5166')}">Used in</th>` : ''}</tr>`;
-  }
-
-  if (showCombined) {
-    const combined = {};
-    selDishes.forEach(dishName => {
-      DISHES[dishName].ingredients.forEach(ing => {
-        const key = ing.name.toLowerCase();
-        if (!combined[key]) combined[key] = { name: ing.name, qty250: 0, unit: ing.unit, dishes: [] };
-        combined[key].qty250 += ing.qty250;
-        combined[key].dishes.push(dishName);
-      });
-    });
-    const rows = Object.values(combined).sort((a, b) => a.name.localeCompare(b.name));
-
-    body += `<div style="background:#2C3E50;color:#fff;padding:8px 12px;font-weight:700;border-radius:6px 6px 0 0;">
-      🛒 Combined Shopping List
-      <span style="float:right;font-size:11px;font-weight:400;opacity:0.8">${rows.length} ingredients</span>
-    </div>
-    <table style="${tblStyle}">${tableHead(false)}
-    ${rows.map((ing, i) => {
-      const qty  = calcQty(ing.qty250, people);
-      const fQty = fmtNum(qty);
-      const met  = toMetric(qty, ing.unit);
-      const conv = isConvertible(ing.unit);
-      const mQ   = conv ? met.val : fQty;
-      const mU   = conv ? met.unit : ing.unit;
-      const bg   = i % 2 === 0 ? '#fff' : '#fbf7f2';
-      if (unitMode === 'both')
-        return `<tr style="background:${bg}"><td style="${tdStyle(true)}">${i+1}</td>
-          <td style="${tdStyle(false)}">${ing.name}</td>
-          <td style="${tdStyle(true)};color:#E8820C;font-weight:700">${fQty}</td><td style="${tdStyle(false)};color:#888">${ing.unit}</td>
-          <td style="${tdStyle(true)};color:#1A7A6E;font-weight:700">${mQ}</td><td style="${tdStyle(false)};color:#888">${mU}</td></tr>`;
-      if (unitMode === 'imperial')
-        return `<tr style="background:${bg}"><td style="${tdStyle(true)}">${i+1}</td>
-          <td style="${tdStyle(false)}">${ing.name}</td>
-          <td style="${tdStyle(true)};color:#E8820C;font-weight:700">${fQty}</td><td style="${tdStyle(false)};color:#888">${ing.unit}</td></tr>`;
-      return `<tr style="background:${bg}"><td style="${tdStyle(true)}">${i+1}</td>
-        <td style="${tdStyle(false)}">${ing.name}</td>
-        <td style="${tdStyle(true)};color:#1A7A6E;font-weight:700">${mQ}</td><td style="${tdStyle(false)};color:#888">${mU}</td></tr>`;
-    }).join('')}
-    </table>`;
-  }
-
-  if (showPerdish) {
-    CATEGORIES.forEach(cat => {
-      selDishes.filter(n => DISHES[n].category === cat).forEach(dishName => {
-        const dish  = DISHES[dishName];
-        const color = catColor(cat);
-        body += `<div style="background:${color};color:#fff;padding:7px 12px;font-weight:700;border-radius:6px 6px 0 0;margin-top:10px;">
-          ${dishName} <span style="float:right;font-size:11px;font-weight:400;opacity:0.8">${dish.ingredients.length} ingredients</span>
-        </div>
-        <table style="${tblStyle}">${tableHead(false)}${tableRows(dish.ingredients)}</table>`;
-      });
-    });
-  }
-
-  body += '</div>';
-  return body;
 }
 
 // Start
