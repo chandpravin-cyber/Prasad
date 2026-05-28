@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Prasad">
+<meta name="theme-color" content="#0a2a4a">
+<title>Prasad Menu – Liquid Glass</title>
+
+<!-- PWA manifest -->
+<link rel="manifest" href="manifest.json">
+
+<!-- iOS home-screen icons (Safari ignores manifest icons, needs these) -->
+<link rel="apple-touch-icon" sizes="120x120" href="icons/icon-120.png">
+<link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152.png">
+<link rel="apple-touch-icon" sizes="167x167" href="icons/icon-167.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+<style>
+  /* ─────────────────────────────────────────────────────────
+     LIQUID GLASS THEME · iOS 26 inspired
+     Frosted panels · animated mesh background · specular highlights
+     ───────────────────────────────────────────────────────── */
+  :root {
+    /* Brand accents — now blue-led */
+    --primary:        #0A5BBA;
+    --primary-dark:   #073F82;
+    --accent:         #00B4D8;     /* cyan accent for highlights */
+    --teal:           #1A7A6E;     /* kept for metric-column tint */
+    --maroon:         #8B1A1A;     /* preserved for warm category tags */
+
+    /* Glass tokens — slightly cooler */
+    --glass-bg:       rgba(225, 238, 255, 0.45);
+    --glass-bg-strong:rgba(235, 245, 255, 0.62);
+    --glass-bg-dark:  rgba(10, 20, 38, 0.55);
+    --glass-stroke:   rgba(255, 255, 255, 0.55);
+    --glass-stroke-d: rgba(255, 255, 255, 0.22);
+    --glass-shadow:   0 10px 30px rgba(8, 30, 70, 0.22),
+                      0 1px 0  rgba(255,255,255,0.65) inset,
+                      0 -1px 0 rgba(0,0,0,0.05) inset;
+    --glass-shadow-sm:0 4px 14px rgba(8, 30, 70, 0.16),
+                      0 1px 0 rgba(255,255,255,0.55) inset;
+
+    /* Text */
+    --text:           #0A1626;
+    --text-soft:      #34557A;
+    --muted:          #6C8BAF;
+    --on-tint:        #fff;
+
+    /* Layout */
+    --radius:         22px;
+    --radius-sm:      14px;
+    --radius-pill:    999px;
+    --header-h:       64px;
+    --tab-h:          74px;
+    --safe-bottom:    env(safe-area-inset-bottom, 0px);
+    --safe-top:       env(safe-area-inset-top, 0px);
+
+    --blur:           saturate(180%) blur(22px);
+    --blur-strong:    saturate(200%) blur(30px);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+    color: var(--text);
+    overscroll-behavior: none;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  body { display: flex; flex-direction: column; position: relative; overflow: hidden; }
+
+  /* ── Animated mesh-gradient background ────────────────── */
+  .bg-canvas {
+    position: fixed; inset: -10%;
+    z-index: -2; pointer-events: none;
+    background:
+      radial-gradient(45% 40% at 12% 18%, rgba(99, 180, 255, 0.95), transparent 62%),
+      radial-gradient(38% 32% at 88% 12%, rgba(0,  200, 230, 0.80), transparent 62%),
+      radial-gradient(50% 42% at 82% 82%, rgba(40,  80, 200, 0.70), transparent 65%),
+      radial-gradient(42% 38% at 18% 92%, rgba(120, 90, 220, 0.65), transparent 65%),
+      radial-gradient(60% 50% at 50% 50%, rgba(20,  60, 140, 0.40), transparent 70%),
+      linear-gradient(180deg, #0a2a4a 0%, #061a30 100%);
+    animation: bgDrift 22s ease-in-out infinite alternate;
+    filter: saturate(125%);
+  }
+  .bg-grain {
+    position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    opacity: 0.35; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.6  0 0 0 0 0.5  0 0 0 0 0.4  0 0 0 0.4 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  }
+  @keyframes bgDrift {
+    0%   { transform: translate3d(0,0,0)   scale(1); }
+    50%  { transform: translate3d(-2%,1%,0) scale(1.05); }
+    100% { transform: translate3d(2%,-1%,0) scale(1.02); }
+  }
+
+  /* ── Generic glass surface ────────────────────────────── */
+  .glass {
+    background: var(--glass-bg);
+    backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur);
+    border: 1px solid var(--glass-stroke);
+    box-shadow: var(--glass-shadow);
+    border-radius: var(--radius);
+  }
+
+  /* Liquid Glass refraction + edge lensing — applied to every panel
+     using a shared shadow / filter recipe. Supports Safari + Chrome. */
+  .lg {
+    position: relative;
+    isolation: isolate;
+  }
+  /* moving specular light streak that drifts across glass panels */
+  .lg::before {
+    content: ""; position: absolute; inset: 0;
+    border-radius: inherit; pointer-events: none;
+    z-index: 1;
+    background:
+      linear-gradient(115deg,
+        transparent 0%,
+        transparent 35%,
+        rgba(255,255,255,0.55) 48%,
+        rgba(255,255,255,0.0) 62%,
+        transparent 100%);
+    background-size: 300% 100%;
+    background-position: 120% 0;
+    mix-blend-mode: overlay;
+    opacity: 0.7;
+    animation: lgStreak 11s ease-in-out infinite;
+    animation-delay: var(--lg-delay, 0s);
+  }
+  /* keep panel children above the decorative layers */
+  .lg > * { position: relative; z-index: 2; }
+  /* stagger panels naturally */
+  .category-block:nth-child(2n) { --lg-delay: -3s; }
+  .category-block:nth-child(3n) { --lg-delay: -6s; }
+  .section-block:nth-child(2n)  { --lg-delay: -4s; }
+  @media (prefers-reduced-motion: reduce) {
+    .lg::before, .bg-canvas { animation: none; }
+  }
+  /* inner edge lensing (bright hair-line top, soft refractive bottom) */
+  .lg::after {
+    content: ""; position: absolute; inset: 0;
+    border-radius: inherit; pointer-events: none;
+    box-shadow:
+      inset 0 1px 0   rgba(255,255,255,0.75),
+      inset 0 -1px 0  rgba(0,0,0,0.08),
+      inset 1px 0 0   rgba(255,255,255,0.35),
+      inset -1px 0 0  rgba(255,255,255,0.20);
+  }
+  @keyframes lgStreak {
+    0%   { background-position: 120% 0; opacity: 0; }
+    20%  { opacity: 0.6; }
+    60%  { background-position: -40% 0; opacity: 0.6; }
+    100% { background-position: -120% 0; opacity: 0; }
+  }
+  /* True refraction — applied to specific panels via .lg-refract.
+     Uses SVG turbulence as a displacement map underneath the blur. */
+  .lg-refract { backdrop-filter: var(--blur) url(#liquidWarp); -webkit-backdrop-filter: var(--blur); }
+
+  /* ── HEADER (floating glass bar) ──────────────────────── */
+  .app-header {
+    position: sticky; top: 8px; z-index: 100;
+    margin: calc(8px + var(--safe-top)) 10px 4px;
+    padding: 0 14px;
+    height: var(--header-h);
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--glass-bg-strong);
+    backdrop-filter: var(--blur-strong);
+    -webkit-backdrop-filter: var(--blur-strong);
+    border: 1px solid var(--glass-stroke);
+    border-radius: var(--radius);
+    box-shadow: var(--glass-shadow);
+    flex-shrink: 0;
+    color: var(--text);
+  }
+  .app-header::before {
+    content: ""; position: absolute; inset: 1px 1px auto 1px; height: 50%;
+    border-radius: calc(var(--radius) - 1px) calc(var(--radius) - 1px) 0 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0));
+    pointer-events: none;
+  }
+  .header-left { display: flex; flex-direction: column; gap: 1px; position: relative; }
+  .app-header h1 {
+    font-size: 18px; font-weight: 700; letter-spacing: -0.2px;
+    background: linear-gradient(180deg, #0a2a55, #2068b8);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .app-header .subtitle { font-size: 11px; color: var(--muted); font-weight: 500; }
+
+  .people-badge {
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(255,255,255,0.5);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.65);
+    border-radius: var(--radius-pill);
+    padding: 4px 6px 4px 12px;
+    box-shadow: 0 2px 8px rgba(60,30,10,0.10), inset 0 1px 0 rgba(255,255,255,0.7);
+    position: relative;
+  }
+  .people-badge label { font-size: 11px; color: var(--text-soft); font-weight: 600; white-space: nowrap; }
+  .people-badge select {
+    background: linear-gradient(180deg, #fff, #f3e6d3);
+    border: 1px solid rgba(0,0,0,0.06);
+    border-radius: var(--radius-pill);
+    color: var(--primary);
+    font-size: 15px; font-weight: 700; text-align: center; padding: 4px 10px; outline: none;
+    -webkit-appearance: none; appearance: none; cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.9);
+  }
+
+  /* ── BODY ─────────────────────────────────────────────── */
+  .app-body {
+    flex: 1; overflow-y: auto; overflow-x: hidden;
+    padding-bottom: calc(var(--tab-h) + var(--safe-bottom) + 24px);
+    padding-top: 4px;
+  }
+
+  /* ── Floating glass tab dock ──────────────────────────── */
+  .tab-bar {
+    position: fixed;
+    bottom: calc(12px + var(--safe-bottom));
+    left: 14px; right: 14px;
+    height: var(--tab-h);
+    background: var(--glass-bg-strong);
+    backdrop-filter: var(--blur-strong);
+    -webkit-backdrop-filter: var(--blur-strong);
+    border: 1px solid var(--glass-stroke);
+    border-radius: 28px;
+    box-shadow: 0 12px 36px rgba(60,30,10,0.22),
+                0 1px 0 rgba(255,255,255,0.65) inset,
+                0 -1px 0 rgba(0,0,0,0.05) inset;
+    display: flex; z-index: 100;
+    overflow: hidden;
+  }
+  .tab-bar::before {
+    content: ""; position: absolute; inset: 1px 1px auto 1px; height: 45%;
+    border-radius: 27px 27px 0 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0));
+    pointer-events: none;
+  }
+  .tab-btn {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 4px;
+    background: none; border: none; color: var(--muted);
+    font-size: 10px; font-weight: 600; cursor: pointer;
+    transition: color 0.25s, transform 0.2s;
+    position: relative;
+  }
+  .tab-btn svg { width: 22px; height: 22px; transition: transform 0.25s; }
+  .tab-btn.active { color: var(--primary); }
+  .tab-btn.active::after {
+    content: ""; position: absolute; inset: 6px 12px;
+    background: radial-gradient(ellipse at center, rgba(0,180,216,0.30), transparent 70%);
+    border-radius: 18px; z-index: -1;
+  }
+  .tab-btn.active svg { transform: translateY(-1px) scale(1.05); }
+
+  /* ── VIEWS ────────────────────────────────────────────── */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ── Splash / loading / error ─────────────────────────── */
+  .splash {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; padding: 60px 24px; text-align: center; gap: 16px;
+  }
+  .splash-card {
+    margin: 24px 14px; padding: 32px 22px;
+    background: var(--glass-bg-strong);
+    backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur);
+    border: 1px solid var(--glass-stroke);
+    border-radius: var(--radius);
+    box-shadow: var(--glass-shadow);
+    text-align: center;
+  }
+  .splash .icon { font-size: 52px; }
+  .splash h2 { font-size: 18px; font-weight: 700; }
+  .splash p { font-size: 14px; color: var(--text-soft); line-height: 1.6; }
+  .splash code {
+    display: block; background: rgba(20,16,12,0.78); color: #FFD89F;
+    padding: 10px 16px; border-radius: 10px; font-size: 13px;
+    margin: 4px 0; font-family: 'SF Mono', Menlo, monospace; text-align: left; word-break: break-all;
+    backdrop-filter: blur(8px);
+  }
+  .spinner {
+    width: 44px; height: 44px;
+    border: 4px solid rgba(10, 91, 186, 0.22);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── File picker fallback ─────────────────────────────── */
+  .file-picker-area {
+    border: 1.5px dashed rgba(10,91,186,0.38); border-radius: var(--radius);
+    padding: 28px 20px; text-align: center; cursor: pointer;
+    transition: border-color 0.25s, background 0.25s; margin: 16px 14px;
+    background: rgba(255,255,255,0.4);
+    backdrop-filter: blur(14px);
+  }
+  .file-picker-area:hover { border-color: var(--primary); background: rgba(255,255,255,0.6); }
+  .file-picker-area input { display: none; }
+  .btn-primary {
+    display: inline-block; padding: 11px 26px;
+    background: linear-gradient(180deg, #1E78DC, #073F82);
+    color: #fff; border: none; border-radius: var(--radius-pill);
+    font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 12px;
+    box-shadow: 0 6px 16px rgba(10,91,186,0.38), inset 0 1px 0 rgba(255,255,255,0.25);
+  }
+  .btn-primary:active { transform: scale(0.97); }
+
+  /* ── MENU TOOLBAR (glass pill bar) ────────────────────── */
+  .menu-toolbar, .list-toolbar {
+    position: sticky;
+    top: calc(var(--header-h) + 12px + var(--safe-top));
+    z-index: 50;
+    margin: 12px 10px 0;
+    padding: 10px 12px;
+    background: var(--glass-bg-strong);
+    backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur);
+    border: 1px solid var(--glass-stroke);
+    border-radius: var(--radius);
+    box-shadow: var(--glass-shadow-sm);
+    display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+  }
+  .list-toolbar { flex-direction: column; align-items: stretch; }
+  .list-toolbar-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+  .btn-sm {
+    padding: 7px 16px; border-radius: var(--radius-pill);
+    border: 1px solid rgba(10,91,186,0.45);
+    background: rgba(255,255,255,0.55);
+    backdrop-filter: blur(10px);
+    color: var(--primary); font-size: 13px; font-weight: 700; cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
+  }
+  .btn-sm:active { transform: scale(0.96); }
+  .btn-sm.filled {
+    background: linear-gradient(180deg, #1E78DC, #073F82);
+    color: #fff; border-color: transparent;
+    box-shadow: 0 4px 12px rgba(10,91,186,0.38), inset 0 1px 0 rgba(255,255,255,0.25);
+  }
+  .menu-stats { margin-left: auto; font-size: 12px; color: var(--text-soft); white-space: nowrap; font-weight: 600; }
+
+  /* ── Category glass cards ─────────────────────────────── */
+  .category-block {
+    margin: 14px 10px 0;
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--glass-shadow);
+    background: var(--glass-bg);
+    backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur);
+    border: 1px solid var(--glass-stroke);
+    position: relative;
+  }
+  .category-block::before {
+    content: ""; position: absolute; inset: 0 0 auto 0; height: 40%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.45), rgba(255,255,255,0));
+    pointer-events: none;
+  }
+  .category-block:last-child { margin-bottom: 14px; }
+
+  .category-header {
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px 14px;
+    color: #fff;
+    cursor: pointer; user-select: none;
+    position: relative;
+    /* The colored layer is set inline via JS using the category color */
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.18), rgba(255,255,255,0)) ,
+      var(--cat-color, #8B1A1A);
+    box-shadow: inset 0 -1px 0 rgba(0,0,0,0.10);
+  }
+  .category-header::after {
+    content: ""; position: absolute; inset: 1px 1px auto 1px; height: 40%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.35), rgba(255,255,255,0));
+    pointer-events: none;
+  }
+  .category-name { font-weight: 700; font-size: 14px; flex: 1; letter-spacing: 0.1px; }
+  .cat-btns { display: flex; gap: 6px; }
+  .cat-btn {
+    padding: 4px 11px; border-radius: var(--radius-pill);
+    border: 1px solid rgba(255,255,255,0.55);
+    background: rgba(255,255,255,0.18);
+    backdrop-filter: blur(8px);
+    color: #fff; font-size: 11px; font-weight: 700; cursor: pointer;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.4);
+  }
+  .cat-btn:active { background: rgba(255,255,255,0.4); }
+  .cat-count {
+    background: rgba(0,0,0,0.20); border-radius: var(--radius-pill);
+    padding: 3px 10px; font-size: 11px; font-weight: 700;
+    min-width: 36px; text-align: center;
+    border: 1px solid rgba(255,255,255,0.25);
+  }
+  .chevron { transition: transform 0.3s cubic-bezier(.4,1.2,.5,1); font-size: 14px; opacity: 0.9; }
+  .chevron.open { transform: rotate(90deg); }
+
+  .category-items { background: transparent; }
+  .category-items.collapsed { display: none; }
+
+  .dish-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.35);
+    transition: background 0.15s;
+    position: relative;
+  }
+  .dish-item:last-child { border-bottom: none; }
+  .dish-item:active { background: rgba(255,255,255,0.45); }
+  .dish-check {
+    width: 24px; height: 24px; border-radius: 8px;
+    border: 1.5px solid rgba(10,91,186,0.38);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(6px);
+    transition: all 0.2s cubic-bezier(.4,1.4,.5,1);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
+  }
+  .dish-item.selected .dish-check {
+    background: linear-gradient(180deg, #2E92F5, #073F82);
+    border-color: transparent;
+    box-shadow: 0 3px 10px rgba(10,91,186,0.55), inset 0 1px 0 rgba(255,255,255,0.4);
+    transform: scale(1.05);
+  }
+  .dish-check svg { display: none; }
+  .dish-item.selected .dish-check svg { display: block; }
+  .dish-name { font-size: 15px; font-weight: 500; flex: 1; color: var(--text); }
+  .dish-count-badge {
+    font-size: 11px; color: var(--text-soft); font-weight: 600;
+    background: rgba(255,255,255,0.6); padding: 3px 9px; border-radius: var(--radius-pill);
+    border: 1px solid rgba(255,255,255,0.7);
+  }
+
+  /* ── Shopping list — segmented control ────────────────── */
+  .unit-seg {
+    display: flex;
+    background: rgba(255,255,255,0.4);
+    backdrop-filter: blur(14px);
+    border-radius: var(--radius-pill);
+    border: 1px solid rgba(255,255,255,0.6);
+    overflow: hidden;
+    padding: 3px;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+  }
+  .unit-seg button {
+    padding: 6px 14px; border: none; background: transparent;
+    font-size: 12px; font-weight: 700; color: var(--text-soft); cursor: pointer;
+    border-radius: var(--radius-pill);
+    transition: all 0.25s cubic-bezier(.4,1,.5,1);
+  }
+  .unit-seg button.active {
+    background: linear-gradient(180deg, #fff, #f3e6d3);
+    color: var(--primary);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.9);
+  }
+
+  .summary-pill {
+    background: linear-gradient(180deg, #1E78DC, #073F82);
+    color: #fff; border-radius: var(--radius-pill);
+    padding: 6px 14px; font-size: 11px; font-weight: 700; flex-shrink: 0;
+    box-shadow: 0 3px 10px rgba(10,91,186,0.32), inset 0 1px 0 rgba(255,255,255,0.25);
+  }
+  .pdf-btn {
+    margin-left: auto; padding: 8px 16px;
+    background: linear-gradient(180deg, #00C2E8, #0080A8);
+    color: #fff; border: none; border-radius: var(--radius-pill);
+    font-size: 12px; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; gap: 6px; flex-shrink: 0;
+    box-shadow: 0 4px 14px rgba(0, 180, 216, 0.45), inset 0 1px 0 rgba(255,255,255,0.35);
+    transition: transform 0.15s;
+  }
+  .pdf-btn:active { transform: scale(0.97); }
+
+  .list-toolbar label { color: var(--text-soft); font-weight: 500; }
+  .list-toolbar input[type="checkbox"] {
+    accent-color: var(--primary); width: 16px; height: 16px;
+  }
+
+  /* ── Section blocks (combined / per-dish) ─────────────── */
+  .section-block {
+    margin: 12px 10px 0;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--glass-bg-strong);
+    backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur);
+    border: 1px solid var(--glass-stroke);
+    box-shadow: var(--glass-shadow);
+    position: relative;
+  }
+  .section-block:last-child { margin-bottom: 14px; }
+
+  .combined-header {
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.18), rgba(255,255,255,0)),
+      linear-gradient(180deg, #3D5166, #2C3E50);
+    color: #fff; padding: 12px 14px; font-weight: 700; font-size: 14px;
+    display: flex; align-items: center; gap: 8px;
+    position: relative;
+  }
+  .combined-stats {
+    font-size: 11px; font-weight: 500; opacity: 0.85;
+    margin-left: auto; text-align: right;
+  }
+  .dish-section-header {
+    color: #fff; padding: 10px 14px;
+    font-weight: 700; font-size: 13px;
+    display: flex; align-items: center; gap: 8px;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.20), rgba(255,255,255,0)),
+      var(--cat-color, #8B1A1A);
+    position: relative;
+  }
+  .ing-count { font-size: 11px; font-weight: 500; opacity: 0.85; margin-left: auto; }
+
+  .table-header-row {
+    display: grid; color: rgba(255,255,255,0.95);
+    font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.4px;
+    background: linear-gradient(180deg, #4D617A, #3D5166);
+  }
+  .table-header-row.both    { grid-template-columns: 28px 1fr 62px 38px 62px 38px 80px; }
+  .table-header-row.imperial{ grid-template-columns: 28px 1fr 80px 48px 80px; }
+  .table-header-row.metric  { grid-template-columns: 28px 1fr 80px 48px 80px; }
+  .th { padding: 8px 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .th-imp { background: linear-gradient(180deg, rgba(232,131,12,0.55), rgba(232,131,12,0.30)); }
+  .th-met { background: linear-gradient(180deg, rgba(26,122,110,0.55), rgba(26,122,110,0.30)); }
+
+  .ing-row {
+    display: grid; align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,0.35);
+    font-size: 13px; color: var(--text);
+  }
+  .ing-row.both    { grid-template-columns: 28px 1fr 62px 38px 62px 38px 80px; }
+  .ing-row.imperial{ grid-template-columns: 28px 1fr 80px 48px 80px; }
+  .ing-row.metric  { grid-template-columns: 28px 1fr 80px 48px 80px; }
+  .ing-row:nth-child(even) { background: rgba(255,255,255,0.30); }
+  .ing-row:last-child { border-bottom: none; }
+  .td { padding: 9px 6px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .td-num { font-weight: 700; color: var(--muted); font-size: 11px; text-align: center; }
+  .td-qty-imp { color: var(--accent); font-weight: 700; text-align: right; }
+  .td-qty-met { color: var(--teal); font-weight: 700; text-align: right; }
+  .td-unit { color: var(--muted); font-size: 11px; font-weight: 500; }
+  .td-used { color: var(--text-soft); font-size: 11px; }
+
+  /* ── PDF MODAL ────────────────────────────────────────── */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(20, 12, 4, 0.40);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex; align-items: flex-end;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal-sheet {
+    width: 100%;
+    background: var(--glass-bg-strong);
+    backdrop-filter: var(--blur-strong);
+    -webkit-backdrop-filter: var(--blur-strong);
+    border: 1px solid var(--glass-stroke);
+    border-bottom: none;
+    border-radius: 28px 28px 0 0;
+    padding: 20px 22px calc(22px + var(--safe-bottom));
+    transform: translateY(100%);
+    transition: transform 0.35s cubic-bezier(.22,1,.36,1);
+    box-shadow: 0 -10px 50px rgba(0,0,0,0.25);
+    position: relative;
+  }
+  .modal-sheet::before {
+    content: ""; position: absolute; inset: 1px 1px auto 1px; height: 30%;
+    border-radius: 27px 27px 0 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.5), rgba(255,255,255,0));
+    pointer-events: none;
+  }
+  .modal-overlay.open .modal-sheet { transform: translateY(0); }
+  .modal-handle {
+    width: 44px; height: 5px;
+    background: rgba(0,0,0,0.18);
+    border-radius: 3px; margin: 0 auto 18px;
+  }
+  .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; color: var(--text); }
+  .modal-sub   { font-size: 13px; color: var(--text-soft); margin-bottom: 16px; line-height: 1.4; }
+  .modal-input {
+    width: 100%; padding: 13px 16px;
+    border: 1px solid rgba(255,255,255,0.6);
+    background: rgba(255,255,255,0.55);
+    backdrop-filter: blur(10px);
+    border-radius: 14px;
+    font-size: 16px; outline: none;
+    transition: all 0.25s;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), inset 0 -1px 0 rgba(0,0,0,0.04);
+  }
+  .modal-input:focus {
+    border-color: var(--accent);
+    background: rgba(255,255,255,0.85);
+    box-shadow: 0 0 0 4px rgba(0,180,216,0.22), inset 0 1px 0 rgba(255,255,255,0.9);
+  }
+  .modal-actions { display: flex; gap: 10px; margin-top: 16px; }
+  .modal-cancel {
+    flex: 1; padding: 13px;
+    border: 1px solid rgba(0,0,0,0.10);
+    background: rgba(255,255,255,0.5);
+    backdrop-filter: blur(10px);
+    border-radius: 14px; font-size: 15px;
+    font-weight: 700; cursor: pointer; color: var(--text-soft);
+  }
+  .modal-go {
+    flex: 2; padding: 13px;
+    background: linear-gradient(180deg, #1E78DC, #073F82);
+    color: #fff; border: none; border-radius: 14px;
+    font-size: 15px; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    box-shadow: 0 6px 20px rgba(10,91,186,0.42), inset 0 1px 0 rgba(255,255,255,0.25);
+    transition: transform 0.15s;
+  }
+  .modal-go:disabled { background: linear-gradient(180deg, #c8b8a8, #a89888); cursor: default; box-shadow: none; }
+  .modal-go:active:not(:disabled) { transform: scale(0.98); }
+
+  .result-card {
+    margin-top: 16px; border-radius: 14px;
+    background: rgba(220, 250, 230, 0.55);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(140, 220, 170, 0.6);
+    padding: 14px; display: none;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
+  }
+  .result-card.show { display: block; }
+  .result-card h4 { font-size: 13px; font-weight: 700; color: #1A6B3A; margin-bottom: 10px; }
+  .url-row {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,0.75);
+    border: 1px solid rgba(255,255,255,0.6);
+    border-radius: 10px; padding: 9px 11px; margin-bottom: 6px;
+  }
+  .url-label { font-size: 10px; font-weight: 700; color: var(--muted); min-width: 42px; }
+  .url-text  { font-size: 11px; color: #1A5A8B; flex: 1; word-break: break-all; font-family: 'SF Mono', Menlo, monospace; }
+  .copy-btn  {
+    padding: 5px 10px;
+    background: linear-gradient(180deg, #1E78DC, #073F82);
+    color: #fff; border: none; border-radius: 7px;
+    font-size: 11px; font-weight: 700; cursor: pointer; flex-shrink: 0;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.25);
+  }
+  .copy-btn:active { transform: scale(0.95); }
+  .gen-spinner {
+    display: none; width: 18px; height: 18px;
+    border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff;
+    border-radius: 50%; animation: spin 0.7s linear infinite;
+  }
+
+  .no-selection {
+    text-align: center; padding: 60px 24px; color: var(--text-soft);
+    margin: 24px 14px;
+    background: var(--glass-bg);
+    backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur);
+    border: 1px solid var(--glass-stroke);
+    border-radius: var(--radius);
+    box-shadow: var(--glass-shadow-sm);
+  }
+  .no-selection .icon { font-size: 52px; margin-bottom: 12px; }
+  .no-selection p { font-size: 15px; line-height: 1.5; }
+
+  /* ── DARK MODE TWEAKS ─────────────────────────────────── */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --glass-bg:       rgba(40, 28, 20, 0.50);
+      --glass-bg-strong:rgba(40, 28, 20, 0.65);
+      --glass-stroke:   rgba(255, 255, 255, 0.18);
+      --text:           #F5EADC;
+      --text-soft:      #C8B398;
+      --muted:          #9C8770;
+      --glass-shadow:   0 10px 30px rgba(0,0,0,0.45),
+                        0 1px 0 rgba(255,255,255,0.10) inset;
+      --glass-shadow-sm:0 4px 14px rgba(0,0,0,0.30),
+                        0 1px 0 rgba(255,255,255,0.10) inset;
+    }
+    .bg-canvas {
+      background:
+        radial-gradient(40% 35% at 15% 20%, rgba(80, 140, 220, 0.60), transparent 60%),
+        radial-gradient(35% 30% at 85% 15%, rgba(0,  200, 230, 0.45), transparent 60%),
+        radial-gradient(45% 40% at 80% 80%, rgba(40,  70, 200, 0.55), transparent 65%),
+        radial-gradient(40% 35% at 20% 90%, rgba(110, 80, 220, 0.50), transparent 65%),
+        linear-gradient(180deg, #04101e 0%, #061a30 100%);
+    }
+    .app-header h1 {
+      background: linear-gradient(180deg, #DCEEFF, #6AB6FF);
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    .people-badge select { background: linear-gradient(180deg, #1b3550, #0e2238); color: #8FC8FF; }
+    .dish-name { color: var(--text); }
+    .ing-row { color: var(--text); }
+    .dish-count-badge { background: rgba(255,255,255,0.10); border-color: rgba(255,255,255,0.18); color: var(--text-soft); }
+    .modal-input { background: rgba(40,28,20,0.55); color: var(--text); }
+    .modal-cancel { background: rgba(60,40,28,0.55); color: var(--text-soft); }
+    .url-row { background: rgba(40,28,20,0.55); border-color: rgba(255,255,255,0.18); }
+    .url-text { color: #8FC8FF; }
+  }
+
+  /* ── Print ────────────────────────────────────────────── */
+  @media print {
+    .bg-canvas, .bg-grain, .app-header, .tab-bar, .menu-toolbar, .list-toolbar, .pdf-btn { display: none !important; }
+    body { background: #fff; }
+    .app-body { overflow: visible; padding: 0; }
+    #view-menu { display: none !important; }
+    #view-list { display: block !important; }
+    .section-block { page-break-inside: avoid; box-shadow: none; border: 1px solid #ccc; margin: 6px 0; backdrop-filter: none; background: #fff; }
+    .ing-row { font-size: 11px; background: #fff !important; }
+    @page { margin: 1cm; size: A4; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-canvas"></div>
+<div class="bg-grain"></div>
+
+<!-- SVG filter for true liquid-glass refraction (Apple-style displacement) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <filter id="liquidWarp" x="0%" y="0%" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.012 0.018" numOctaves="2" seed="7" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="6" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+</svg>
+
+<header class="app-header lg">
+  <div class="header-left">
+    <h1>🍛 Prasad Menu</h1>
+    <div class="subtitle">Liquid Ingredient Planner</div>
+  </div>
+  <div class="people-badge">
+    <label>People</label>
+    <select id="people-input">
+      <option value="200">200</option>
+      <option value="250" selected>250</option>
+      <option value="300">300</option>
+      <option value="350">350</option>
+      <option value="400">400</option>
+      <option value="450">450</option>
+      <option value="500">500</option>
+    </select>
+  </div>
+</header>
+
+<div class="app-body">
+  <!-- LOADING SCREEN -->
+  <div class="view active" id="view-loading">
+    <div class="splash-card splash">
+      <div class="spinner"></div>
+      <h2>Loading Dishes…</h2>
+      <p>Reading CSV files from the dishes/ folder</p>
+    </div>
+  </div>
+
+  <!-- FILE:// ERROR SCREEN -->
+  <div class="view" id="view-error">
+    <div class="splash-card splash">
+      <div class="icon">⚠️</div>
+      <h2>Open via a local server</h2>
+      <p>Browsers block CSV files from being read when you open HTML directly from disk.<br><br>
+      Run this one command in Terminal from your <strong>Prasad</strong> folder:</p>
+      <code>cd ~/Documents/Claude/Projects/Prasad</code>
+      <code>python3 -m http.server 8080</code>
+      <p>Then open <strong>http://localhost:8080/prasad_planner_liquid.html</strong> in your browser.</p>
+      <p style="margin-top:12px; font-size:13px; color:var(--text-soft)">
+        — or — select all your CSV files manually:
+      </p>
+    </div>
+    <div class="file-picker-area" id="picker-area" onclick="document.getElementById('csv-files').click()">
+      <div style="font-size:32px">📂</div>
+      <p style="font-size:14px; margin:8px 0; color:var(--text-soft)">Tap to select all CSV files<br>(menu.csv + all files in dishes/ folder)</p>
+      <button class="btn-primary">Choose CSV Files</button>
+      <input type="file" id="csv-files" accept=".csv" multiple>
+    </div>
+  </div>
+
+  <!-- MENU VIEW -->
+  <div class="view" id="view-menu">
+    <div class="menu-toolbar lg">
+      <button class="btn-sm filled" onclick="selectAll()">Select All</button>
+      <button class="btn-sm" onclick="clearAll()">Clear All</button>
+      <span class="menu-stats" id="menu-stats">0 dishes selected</span>
+    </div>
+    <div id="menu-container"></div>
+  </div>
+
+  <!-- SHOPPING LIST VIEW -->
+  <div class="view" id="view-list">
+    <div class="list-toolbar lg">
+      <div class="list-toolbar-row">
+        <div class="unit-seg">
+          <button onclick="setUnit('both')" class="active" id="unit-both">Both</button>
+          <button onclick="setUnit('imperial')" id="unit-imperial">Imperial</button>
+          <button onclick="setUnit('metric')" id="unit-metric">Metric</button>
+        </div>
+        <span id="list-summary" class="summary-pill">0 dishes</span>
+        <button class="pdf-btn" onclick="openPdfModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Save Shopping List
+        </button>
+      </div>
+      <div class="list-toolbar-row">
+        <label style="font-size:12px">Show:</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px">
+          <input type="checkbox" id="show-combined" checked onchange="renderList()"> Combined list
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px">
+          <input type="checkbox" id="show-perdish" checked onchange="renderList()"> Per-dish
+        </label>
+      </div>
+    </div>
+    <div id="list-container"></div>
+  </div>
+</div>
+
+<!-- ─── PDF MODAL ─── -->
+<div class="modal-overlay" id="pdf-modal" onclick="modalBgClick(event)">
+  <div class="modal-sheet lg">
+    <div class="modal-handle"></div>
+    <div class="modal-title">💾 Save Shopping List</div>
+    <div class="modal-sub" id="modal-sub">Name your PDF — it will be saved to the PDF/ folder and a shareable link will be created.</div>
+    <input class="modal-input" id="pdf-name-input" type="text" placeholder="e.g. Prasad_June_2026" maxlength="80"
+      oninput="document.getElementById('modal-go-btn').disabled = !this.value.trim()"
+      onkeydown="if(event.key==='Enter' && this.value.trim()) generatePdf()">
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closePdfModal()">Cancel</button>
+      <button class="modal-go" id="modal-go-btn" onclick="generatePdf()" disabled>
+        <div class="gen-spinner" id="gen-spinner"></div>
+        <span id="go-label">Generate PDF →</span>
+      </button>
+    </div>
+    <div class="result-card" id="result-card">
+      <h4>✅ PDF saved!</h4>
+      <div class="url-row">
+        <span class="url-label">Local</span>
+        <span class="url-text" id="url-local"></span>
+        <button class="copy-btn" onclick="copyUrl('url-local')">Copy</button>
+      </div>
+      <div class="url-row">
+        <span class="url-label">Wi-Fi</span>
+        <span class="url-text" id="url-wifi"></span>
+        <button class="copy-btn" onclick="copyUrl('url-wifi')">Copy</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<nav class="tab-bar lg">
+  <button class="tab-btn" id="tab-menu" onclick="switchTab('menu')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+      <rect x="9" y="3" width="6" height="4" rx="1"/>
+      <path d="M9 12h6M9 16h4"/>
+    </svg>
+    Menu
+  </button>
+  <button class="tab-btn" id="tab-list" onclick="switchTab('list')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+      <line x1="3" y1="6" x2="21" y2="6"/>
+      <path d="M16 10a4 4 0 0 1-8 0"/>
+    </svg>
+    Shopping List
+  </button>
+</nav>
+
+<script>
+// ─── State ───────────────────────────────────────────────
+let DISHES    = {};
+let MENU_ORDER = [];
+let CATEGORIES = [];
+let selected   = new Set();
+let unitMode   = 'both';
+let collapsed  = {};
+
+const CAT_COLORS = {
+  "Rice & Khichdi":        "#7B5E2A",
+  "Dal":                   "#8B3A0F",
+  "Sabji & Curries":       "#1A6B3A",
+  "Raita Salad & Chutney": "#1A5A8B",
+  "Sweets (Khiri & Halwa)":"#7B2A6B"
+};
+function catColor(cat) { return CAT_COLORS[cat] || '#8B1A1A'; }
+
+// ─── CSV parser ──────────────────────────────────────────
+function parseCSV(text) {
+  const lines = text.trim().split(/\r?\n/);
+  const headers = lines[0].split(',').map(h => h.trim());
+  return lines.slice(1).filter(l => l.trim()).map(line => {
+    const vals = []; let cur = ''; let inQ = false;
+    for (let c of line) {
+      if (c === '"') { inQ = !inQ; }
+      else if (c === ',' && !inQ) { vals.push(cur.trim()); cur = ''; }
+      else cur += c;
+    }
+    vals.push(cur.trim());
+    const obj = {};
+    headers.forEach((h, i) => obj[h] = vals[i] ?? '');
+    return obj;
+  });
+}
+
+// ─── Load via fetch (http://) ────────────────────────────
+async function loadViaFetch() {
+  const menuRes  = await fetch('menu.csv');
+  const menuText = await menuRes.text();
+  const menuRows = parseCSV(menuText);
+
+  const catSeen = new Set();
+  menuRows.forEach(r => { if (!catSeen.has(r.category)) { CATEGORIES.push(r.category); catSeen.add(r.category); } });
+
+  await Promise.all(menuRows.map(async row => {
+    const res  = await fetch('dishes/' + row.file);
+    const text = await res.text();
+    const ings = parseCSV(text).map(r => ({ name: r.ingredient, qty250: parseFloat(r.qty250), unit: r.unit }));
+    DISHES[row.dish] = { category: row.category, file: row.file, ingredients: ings };
+    MENU_ORDER.push(row.dish);
+  }));
+
+  MENU_ORDER = menuRows.map(r => r.dish);
+}
+
+// ─── Load via File picker (file://) ─────────────────────
+function loadViaFiles(files) {
+  return new Promise((resolve, reject) => {
+    const fileMap = {};
+    for (const f of files) fileMap[f.name] = f;
+
+    const readFile = f => new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = e => res(e.target.result);
+      r.onerror = rej;
+      r.readAsText(f);
+    });
+
+    if (!fileMap['menu.csv']) { reject(new Error('menu.csv not found in selected files')); return; }
+
+    readFile(fileMap['menu.csv']).then(async menuText => {
+      const menuRows = parseCSV(menuText);
+      const catSeen = new Set();
+      menuRows.forEach(r => {
+        if (!catSeen.has(r.category)) { CATEGORIES.push(r.category); catSeen.add(r.category); }
+      });
+
+      for (const row of menuRows) {
+        const dishFile = fileMap[row.file];
+        if (!dishFile) { console.warn('Missing file:', row.file); continue; }
+        const text = await readFile(dishFile);
+        const ings = parseCSV(text).map(r => ({ name: r.ingredient, qty250: parseFloat(r.qty250), unit: r.unit }));
+        DISHES[row.dish] = { category: row.category, file: row.file, ingredients: ings };
+      }
+      MENU_ORDER = menuRows.map(r => r.dish);
+      resolve();
+    }).catch(reject);
+  });
+}
+
+// ─── Boot ────────────────────────────────────────────────
+async function boot() {
+  const isFileProtocol = window.location.protocol === 'file:';
+
+  if (!isFileProtocol) {
+    try {
+      await loadViaFetch();
+      showApp();
+    } catch (e) {
+      showError(`Failed to load CSV files: ${e.message}`);
+    }
+  } else {
+    switchView('error');
+  }
+}
+
+function showApp() {
+  switchView('menu');
+  document.getElementById('tab-menu').classList.add('active');
+  renderMenu();
+}
+
+function showError(msg) {
+  document.querySelector('#view-error .splash h2').textContent = 'Load Error';
+  document.querySelector('#view-error .splash p').textContent  = msg;
+  switchView('error');
+}
+
+document.getElementById('csv-files').addEventListener('change', async function() {
+  if (!this.files.length) return;
+  try {
+    document.querySelector('#view-error .splash h2').textContent = 'Loading…';
+    await loadViaFiles(this.files);
+    showApp();
+  } catch (e) {
+    alert('Error loading files: ' + e.message);
+  }
+});
+
+// ─── View management ─────────────────────────────────────
+function switchView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  switchView(tab);
+  if (tab === 'list') renderList();
+}
+
+// ─── Unit mode ───────────────────────────────────────────
+function setUnit(mode) {
+  unitMode = mode;
+  ['both','imperial','metric'].forEach(m =>
+    document.getElementById('unit-' + m).classList.toggle('active', m === mode)
+  );
+  renderList();
+}
+
+// ─── Helpers ─────────────────────────────────────────────
+function fmtNum(n) {
+  if (n >= 100) return Math.round(n).toLocaleString();
+  if (n >= 10)  return +n.toFixed(1);
+  if (n >= 1)   return +n.toFixed(2);
+  return +n.toFixed(3);
+}
+function toMetric(qty, unit) {
+  if (unit === 'lb') {
+    const kg = qty * 0.453592;
+    return kg >= 1 ? { val: +kg.toFixed(3), unit: 'kg' } : { val: Math.round(kg * 1000), unit: 'g' };
+  }
+  if (unit === 'gallons') {
+    const L = qty * 3.78541;
+    return L >= 1 ? { val: +L.toFixed(3), unit: 'L' } : { val: Math.round(L * 1000), unit: 'mL' };
+  }
+  return { val: +qty.toFixed(2), unit };
+}
+function isConvertible(unit) { return unit === 'lb' || unit === 'gallons'; }
+function getPeople() { return parseInt(document.getElementById('people-input').value) || 200; }
+function calcQty(qty250, people) { return qty250 * people / 250; }
+
+// ─── Render Menu ─────────────────────────────────────────
+function renderMenu() {
+  const container = document.getElementById('menu-container');
+  container.innerHTML = '';
+
+  CATEGORIES.forEach(cat => {
+    const dishes = MENU_ORDER.filter(n => DISHES[n].category === cat);
+    const selCount = dishes.filter(n => selected.has(n)).length;
+    const isCollapsed = collapsed[cat];
+    const color = catColor(cat);
+
+    const block = document.createElement('div');
+    block.className = 'category-block lg';
+
+    const header = document.createElement('div');
+    header.className = 'category-header' + (isCollapsed ? ' collapsed' : '');
+    header.style.setProperty('--cat-color', color);
+    header.innerHTML = `
+      <span class="category-name">${cat}</span>
+      <div class="cat-btns">
+        <button class="cat-btn" onclick="catAll('${cat}',event)">All</button>
+        <button class="cat-btn" onclick="catNone('${cat}',event)">None</button>
+      </div>
+      <span class="cat-count">${selCount}/${dishes.length}</span>
+      <span class="chevron ${isCollapsed ? '' : 'open'}">›</span>`;
+    header.onclick = e => {
+      if (e.target.classList.contains('cat-btn')) return;
+      collapsed[cat] = !collapsed[cat];
+      renderMenu();
+    };
+
+    const items = document.createElement('div');
+    items.className = 'category-items' + (isCollapsed ? ' collapsed' : '');
+
+    dishes.forEach(name => {
+      const dish = DISHES[name];
+      const isSel = selected.has(name);
+      const item = document.createElement('div');
+      item.className = 'dish-item' + (isSel ? ' selected' : '');
+      item.innerHTML = `
+        <div class="dish-check">
+          <svg viewBox="0 0 12 12" fill="none" width="12" height="12">
+            <polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <span class="dish-name">${name}</span>
+        <span class="dish-count-badge">${dish.ingredients.length} ing</span>`;
+      item.onclick = () => {
+        selected.has(name) ? selected.delete(name) : selected.add(name);
+        renderMenu();
+        updateMenuStats();
+      };
+      items.appendChild(item);
+    });
+
+    block.appendChild(header);
+    block.appendChild(items);
+    container.appendChild(block);
+  });
+  updateMenuStats();
+}
+
+function updateMenuStats() {
+  const n = selected.size;
+  document.getElementById('menu-stats').textContent = n === 1 ? '1 dish selected' : `${n} dishes selected`;
+}
+function catAll(cat, e)  { e.stopPropagation(); MENU_ORDER.filter(n => DISHES[n].category === cat).forEach(n => selected.add(n));    renderMenu(); }
+function catNone(cat, e) { e.stopPropagation(); MENU_ORDER.filter(n => DISHES[n].category === cat).forEach(n => selected.delete(n)); renderMenu(); }
+function selectAll() { MENU_ORDER.forEach(n => selected.add(n)); renderMenu(); }
+function clearAll()  { selected.clear(); renderMenu(); }
+
+// ─── Render Shopping List ────────────────────────────────
+function renderList() {
+  const people       = getPeople();
+  const showCombined = document.getElementById('show-combined').checked;
+  const showPerdish  = document.getElementById('show-perdish').checked;
+  const container    = document.getElementById('list-container');
+  const selDishes    = MENU_ORDER.filter(n => selected.has(n));
+
+  const totalIng = new Set();
+  selDishes.forEach(n => DISHES[n].ingredients.forEach(i => totalIng.add(i.name.toLowerCase())));
+  document.getElementById('list-summary').textContent =
+    `${selDishes.length} dish${selDishes.length !== 1 ? 'es' : ''} · ${totalIng.size} ingredients`;
+
+  if (selDishes.length === 0) {
+    container.innerHTML = `<div class="no-selection"><div class="icon">🛒</div><p>Select dishes from the Menu tab<br>to see your shopping list</p></div>`;
+    return;
+  }
+
+  let html = '';
+
+  if (showCombined) {
+    const combined = {};
+    selDishes.forEach(dishName => {
+      DISHES[dishName].ingredients.forEach(ing => {
+        const key = ing.name.toLowerCase();
+        if (!combined[key]) combined[key] = { name: ing.name, qty250: 0, unit: ing.unit, dishes: [] };
+        combined[key].qty250 += ing.qty250;
+        combined[key].dishes.push(dishName);
+      });
+    });
+    const rows = Object.values(combined).sort((a, b) => a.name.localeCompare(b.name));
+
+    html += `<div class="section-block lg">
+      <div class="combined-header">🛒 Combined Shopping List
+        <span class="combined-stats">${selDishes.length} dishes · ${rows.length} ingredients · ${people} people</span>
+      </div>
+      ${tableHeader()}`;
+    rows.forEach((ing, i) => {
+      const qty = calcQty(ing.qty250, people);
+      html += ingRow(i + 1, ing.name, fmtNum(qty), ing.unit, toMetric(qty, ing.unit), isConvertible(ing.unit), [...new Set(ing.dishes)].join(', '));
+    });
+    html += '</div>';
+  }
+
+  if (showPerdish) {
+    CATEGORIES.forEach(cat => {
+      selDishes.filter(n => DISHES[n].category === cat).forEach(dishName => {
+        const dish = DISHES[dishName];
+        html += `<div class="section-block lg">
+          <div class="dish-section-header" style="--cat-color:${catColor(cat)}">
+            ${dishName}
+            <span class="ing-count">${dish.ingredients.length} ingredients · ${people} people</span>
+          </div>
+          ${tableHeader()}`;
+        dish.ingredients.forEach((ing, i) => {
+          const qty = calcQty(ing.qty250, people);
+          html += ingRow(i + 1, ing.name, fmtNum(qty), ing.unit, toMetric(qty, ing.unit), isConvertible(ing.unit), '');
+        });
+        html += '</div>';
+      });
+    });
+  }
+
+  container.innerHTML = html;
+}
+
+function tableHeader() {
+  if (unitMode === 'both')
+    return `<div class="table-header-row both">
+      <div class="th td-num">#</div><div class="th">Ingredient</div>
+      <div class="th th-imp" style="text-align:right">lb Qty</div><div class="th th-imp">Unit</div>
+      <div class="th th-met" style="text-align:right">Metric</div><div class="th th-met">Unit</div>
+      <div class="th">Used in</div></div>`;
+  if (unitMode === 'imperial')
+    return `<div class="table-header-row imperial">
+      <div class="th td-num">#</div><div class="th">Ingredient</div>
+      <div class="th th-imp" style="text-align:right">Quantity</div><div class="th th-imp">Unit</div>
+      <div class="th">Used in</div></div>`;
+  return `<div class="table-header-row metric">
+    <div class="th td-num">#</div><div class="th">Ingredient</div>
+    <div class="th th-met" style="text-align:right">Quantity</div><div class="th th-met">Unit</div>
+    <div class="th">Used in</div></div>`;
+}
+
+function ingRow(num, name, impQty, impUnit, metric, convertible, usedIn) {
+  if (unitMode === 'both') {
+    const mQ = convertible ? metric.val : impQty;
+    const mU = convertible ? metric.unit : impUnit;
+    return `<div class="ing-row both">
+      <div class="td td-num">${num}</div><div class="td">${name}</div>
+      <div class="td td-qty-imp" style="text-align:right">${impQty}</div><div class="td td-unit">${impUnit}</div>
+      <div class="td td-qty-met" style="text-align:right">${mQ}</div><div class="td td-unit">${mU}</div>
+      <div class="td td-used">${usedIn}</div></div>`;
+  }
+  if (unitMode === 'imperial')
+    return `<div class="ing-row imperial">
+      <div class="td td-num">${num}</div><div class="td">${name}</div>
+      <div class="td td-qty-imp" style="text-align:right">${impQty}</div><div class="td td-unit">${impUnit}</div>
+      <div class="td td-used">${usedIn}</div></div>`;
+  const mQ = convertible ? metric.val : impQty;
+  const mU = convertible ? metric.unit : impUnit;
+  return `<div class="ing-row metric">
+    <div class="td td-num">${num}</div><div class="td">${name}</div>
+    <div class="td td-qty-met" style="text-align:right">${mQ}</div><div class="td td-unit">${mU}</div>
+    <div class="td td-used">${usedIn}</div></div>`;
+}
+
+document.getElementById('people-input').addEventListener('change', () => {
+  if (document.getElementById('view-list').classList.contains('active')) renderList();
+});
+
+// ─── PDF Modal ───────────────────────────────────────────
+function openPdfModal() {
+  const modal = document.getElementById('pdf-modal');
+  const inp   = document.getElementById('pdf-name-input');
+  document.getElementById('result-card').classList.remove('show');
+  document.getElementById('modal-sub').textContent =
+    'Name your PDF — it will be saved to the PDF/ folder and a shareable link will be created.';
+  inp.value = '';
+  document.getElementById('modal-go-btn').disabled = true;
+  document.getElementById('go-label').textContent = 'Generate PDF →';
+  document.getElementById('gen-spinner').style.display = 'none';
+  modal.classList.add('open');
+  setTimeout(() => inp.focus(), 350);
+}
+function closePdfModal() {
+  document.getElementById('pdf-modal').classList.remove('open');
+}
+function modalBgClick(e) {
+  if (e.target === document.getElementById('pdf-modal')) closePdfModal();
+}
+
+async function generatePdf() {
+  const name = document.getElementById('pdf-name-input').value.trim();
+  if (!name) return;
+
+  document.getElementById('gen-spinner').style.display = 'block';
+  document.getElementById('go-label').textContent      = 'Generating…';
+  document.getElementById('modal-go-btn').disabled     = true;
+
+  try {
+    const people    = getPeople();
+    const selDishes = MENU_ORDER.filter(n => selected.has(n));
+
+    const payload = {
+      filename:     name,
+      people:       people,
+      unitMode:     unitMode,
+      showCombined: document.getElementById('show-combined').checked,
+      showPerDish:  document.getElementById('show-perdish').checked,
+      categories:   CATEGORIES,
+      dishes:       selDishes.map(dishName => ({
+        name:        dishName,
+        category:    DISHES[dishName].category,
+        ingredients: DISHES[dishName].ingredients.map(ing => ({
+          name:   ing.name,
+          qty250: ing.qty250,
+          unit:   ing.unit
+        }))
+      }))
+    };
+
+    const res = await fetch('/save-pdf', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(payload)
+    });
+
+    if (!res.ok) throw new Error(`Server error ${res.status}`);
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Unknown error');
+
+    document.getElementById('url-local').textContent = data.url_local;
+    document.getElementById('url-wifi').textContent  = data.url_wifi;
+    document.getElementById('result-card').classList.add('show');
+    document.getElementById('modal-sub').textContent = `"${data.filename}" saved to the PDF/ folder.`;
+    document.getElementById('go-label').textContent  = 'Saved ✓';
+
+  } catch (e) {
+    alert('Could not reach the server.\n\n' + e.message +
+          '\n\nMake sure server.py is running:\n  python3 server.py');
+    document.getElementById('go-label').textContent = 'Generate PDF →';
+  } finally {
+    document.getElementById('gen-spinner').style.display = 'none';
+    document.getElementById('modal-go-btn').disabled = false;
+  }
+}
+
+function copyUrl(id) {
+  const text = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById(id).nextElementSibling;
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 1500);
+  }).catch(() => {
+    const inp = document.createElement('input');
+    inp.value = text;
+    document.body.appendChild(inp);
+    inp.select();
+    document.execCommand('copy');
+    document.body.removeChild(inp);
+  });
+}
+
+// ─── Service Worker registration (PWA) ──────────────────
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW failed', err));
+  });
+}
+
+// ─── "Add to Home Screen" hint for iOS Safari ───────────
+(function() {
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+  const dismissed = localStorage.getItem('prasad-install-hint-dismissed');
+  if (!isIOS || isStandalone || dismissed) return;
+
+  const hint = document.createElement('div');
+  hint.style.cssText = `
+    position: fixed; left: 14px; right: 14px;
+    bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+    background: rgba(235,245,255,0.85);
+    backdrop-filter: saturate(180%) blur(22px);
+    -webkit-backdrop-filter: saturate(180%) blur(22px);
+    border: 1px solid rgba(255,255,255,0.6);
+    border-radius: 18px;
+    box-shadow: 0 10px 30px rgba(8,30,70,0.25), inset 0 1px 0 rgba(255,255,255,0.7);
+    padding: 12px 14px;
+    z-index: 150;
+    font-size: 13px; color: #0A1626; line-height: 1.4;
+    display: flex; align-items: center; gap: 10px;
+    animation: hintIn 0.4s cubic-bezier(.4,1.2,.5,1);
+  `;
+  hint.innerHTML = `
+    <div style="font-size:22px">📲</div>
+    <div style="flex:1">
+      <div style="font-weight:700; margin-bottom:2px">Install as an app</div>
+      <div style="color:#34557A; font-size:12px">Tap <strong>Share</strong> → <strong>Add to Home Screen</strong></div>
+    </div>
+    <button id="hint-close" style="background:linear-gradient(180deg,#1E78DC,#073F82); color:#fff; border:none; padding:8px 14px; border-radius:999px; font-size:12px; font-weight:700; cursor:pointer; box-shadow:0 4px 12px rgba(10,91,186,0.45), inset 0 1px 0 rgba(255,255,255,0.25);">Got it</button>
+  `;
+  document.body.appendChild(hint);
+
+  const style = document.createElement('style');
+  style.textContent = `@keyframes hintIn { from { transform: translateY(20px); opacity:0; } to { transform: translateY(0); opacity:1; } }`;
+  document.head.appendChild(style);
+
+  document.getElementById('hint-close').onclick = () => {
+    localStorage.setItem('prasad-install-hint-dismissed', '1');
+    hint.style.animation = 'hintIn 0.3s cubic-bezier(.4,0,.5,1) reverse';
+    setTimeout(() => hint.remove(), 280);
+  };
+})();
+
+// Start
+boot();
+</script>
+</body>
+</html>
