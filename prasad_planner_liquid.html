@@ -191,8 +191,123 @@
     font-size: 18px; font-weight: 700; letter-spacing: -0.2px;
     background: linear-gradient(180deg, #0a2a55, #2068b8);
     -webkit-background-clip: text; background-clip: text; color: transparent;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .header-logo {
+    height: calc((var(--header-h) - 18px) / 2);   /* half the previous size */
+    width: auto;
+    border-radius: 5px;
+    object-fit: cover;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.25);
+    border: 1px solid rgba(255,255,255,0.4);
+    vertical-align: middle;
+    flex-shrink: 0;
   }
   .app-header .subtitle { font-size: 11px; color: var(--muted); font-weight: 500; }
+
+  /* Deity photo at the right edge of the header */
+  .header-photo {
+    height: calc(var(--header-h) - 12px);
+    width: auto;
+    max-width: 38vw;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-left: auto;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+    border: 1px solid rgba(255,255,255,0.35);
+  }
+  body.desktop .header-photo {
+    height: 44px;
+    max-width: 220px;
+  }
+
+  /* View-specific header swap (mobile shopping list page) */
+  .show-on-list { display: none !important; }
+  body.on-list:not(.desktop) .show-on-list { display: flex !important; }
+  body.on-list:not(.desktop) .show-on-menu { display: none !important; }
+
+  body.on-list:not(.desktop) .app-header { position: relative; }
+  .middle-photo {
+    height: calc(var(--header-h) - 18px);
+    width: auto;
+    max-width: 22vw;
+    object-fit: cover;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+    border: 1px solid rgba(255,255,255,0.4);
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  body.on-list:not(.desktop) .header-left { position: relative; z-index: 2; flex-shrink: 0; }
+  body.on-list:not(.desktop) .people-stack { position: relative; z-index: 2; }
+
+  .people-stack {
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    margin-left: auto;
+    flex-shrink: 0;
+    z-index: 1;
+  }
+  .people-stack-label {
+    font-size: 10px; color: var(--text-soft, #fff); opacity: 0.9;
+    font-weight: 700; letter-spacing: 0.5px;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+
+  .people-roll {
+    width: 96px; height: 28px;
+    overflow-x: auto; overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none; -ms-overflow-style: none;
+    display: flex; align-items: stretch;
+    background: rgba(255,255,255,0.96);
+    border-radius: 14px;
+    position: relative;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.12);
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 22%, black 78%, transparent 100%);
+            mask-image: linear-gradient(to right, transparent 0%, black 22%, black 78%, transparent 100%);
+  }
+  .people-roll::-webkit-scrollbar { display: none; }
+  .people-roll-pad { flex: 0 0 33px; }
+  .people-roll-item {
+    flex: 0 0 30px;
+    scroll-snap-align: center;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+    color: #b3a8a0;
+    cursor: pointer; user-select: none;
+    transition: color 0.15s, font-size 0.15s, transform 0.15s;
+  }
+  .people-roll-item.is-selected {
+    color: var(--primary, #8B1A1A);
+    font-size: 16px;
+    transform: scale(1.04);
+  }
+
+  /* Tiny dish/ingredient count below the unit selector */
+  .list-summary-line {
+    font-size: 11px; color: var(--text-soft, #666);
+    margin-top: 2px; line-height: 1.2; padding-left: 4px;
+  }
+  body.on-list .app-header { box-shadow: none; }
+
+  /* MERGE: collapse the gap-creating styles on the shopping list page (mobile).
+     The list-toolbar was a floating glass pill with margin + rounded corners
+     + sticky offset (header-h + 12 + safe-top) — all of those create gaps. */
+  body.on-list:not(.desktop) .list-toolbar {
+    margin: 0 !important;
+    border-radius: 0 !important;
+    border-left: 0 !important; border-right: 0 !important; border-top: 0 !important;
+    top: 0 !important;
+    padding: 6px 12px !important;
+    box-shadow: none !important;
+  }
 
   .people-badge {
     display: flex; align-items: center; gap: 6px;
@@ -1041,16 +1156,11 @@
 
 <header class="app-header lg">
   <div class="header-left">
-    <h1><span class="logo-emoji">🍛</span> Prasad Menu<span class="header-dash"> — Ingredient Planner</span></h1>
-    <div class="subtitle">Liquid Ingredient Planner</div>
+    <h1><img src="icons/logo.jpg" alt="" class="header-logo" onerror="this.style.display='none'"> Prasad Menu</h1>
   </div>
 
   <!-- DESKTOP-ONLY inline controls -->
   <div class="header-controls desktop-only">
-    <label class="header-field">
-      <span>Number of People:</span>
-      <input type="number" id="people-input-d" value="250" min="1" max="9999" step="50">
-    </label>
     <label class="header-field">
       <span>Show:</span>
       <select id="unit-select-d">
@@ -1065,8 +1175,6 @@
   </div>
 
   <div class="header-actions desktop-only">
-    <button class="hdr-btn" onclick="selectAll()">Select All</button>
-    <button class="hdr-btn" onclick="clearAll()">Clear All</button>
     <button class="hdr-btn hdr-btn-primary" onclick="openPdfModal()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" style="vertical-align:-2px;margin-right:4px">
         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -1077,11 +1185,29 @@
     </button>
   </div>
 
-  <!-- MOBILE people badge -->
-  <div class="people-badge mobile-only">
-    <label>People</label>
-    <input id="people-input" type="number" inputmode="numeric" pattern="[0-9]*" value="250" min="1" max="9999" step="50">
+  <img src="icons/deities.jpg" alt="Jagannath" class="header-photo show-on-menu" onerror="this.style.display='none'">
+
+  <!-- Deity photo centered — Shopping List page (mobile) -->
+  <img src="icons/deities.jpg" alt="Jagannath" class="middle-photo show-on-list mobile-only" onerror="this.style.display='none'">
+
+  <!-- People label above + rolling picker (Shopping List, mobile) -->
+  <div class="people-stack show-on-list mobile-only">
+    <div class="people-stack-label">People</div>
+    <div class="people-roll" id="people-roll">
+      <div class="people-roll-pad"></div>
+      <div class="people-roll-item" data-value="200">200</div>
+      <div class="people-roll-item" data-value="250">250</div>
+      <div class="people-roll-item" data-value="300">300</div>
+      <div class="people-roll-item" data-value="350">350</div>
+      <div class="people-roll-item" data-value="400">400</div>
+      <div class="people-roll-item" data-value="450">450</div>
+      <div class="people-roll-item" data-value="500">500</div>
+      <div class="people-roll-pad"></div>
+    </div>
   </div>
+
+  <input type="hidden" id="people-input-d" value="250">
+  <input type="hidden" id="people-input" value="250">
 </header>
 
 <div class="app-body">
@@ -1118,11 +1244,7 @@
 
   <!-- MENU VIEW -->
   <div class="view" id="view-menu">
-    <div class="menu-toolbar lg">
-      <button class="btn-sm filled" onclick="selectAll()">Select All</button>
-      <button class="btn-sm" onclick="clearAll()">Clear All</button>
-      <span class="menu-stats" id="menu-stats">0 dishes selected</span>
-    </div>
+    <span class="menu-stats" id="menu-stats" style="display:none">0 dishes selected</span>
     <div id="menu-container"></div>
   </div>
 
@@ -1135,16 +1257,17 @@
           <button onclick="setUnit('imperial')" id="unit-imperial">Imperial</button>
           <button onclick="setUnit('metric')" id="unit-metric">Metric</button>
         </div>
-        <span id="list-summary" class="summary-pill">0 dishes</span>
         <button class="pdf-btn" onclick="openPdfModal()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
             <polyline points="7 10 12 15 17 10"/>
             <line x1="12" y1="15" x2="12" y2="3"/>
           </svg>
-          Save Shopping List
+          Save List
         </button>
       </div>
+      <!-- Tiny dish/ingredient count BELOW the unit selector -->
+      <div id="list-summary" class="list-summary-line">0 dishes</div>
       <div class="list-toolbar-row">
         <label style="font-size:12px">Show:</label>
         <label style="display:flex;align-items:center;gap:6px;font-size:12px">
@@ -1360,6 +1483,7 @@ function showApp() {
   document.body.classList.remove('is-loading', 'is-error');
   switchView('menu');
   document.getElementById('tab-menu').classList.add('active');
+  document.body.classList.add('on-menu');
   wireDesktopControls();
   renderMenu();
   if (isDesktop()) renderList();
@@ -1393,7 +1517,65 @@ function switchTab(tab) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('tab-' + tab).classList.add('active');
   switchView(tab);
-  if (tab === 'list') renderList();
+  document.body.classList.toggle('on-list', tab === 'list');
+  document.body.classList.toggle('on-menu', tab === 'menu');
+  if (tab === 'list') {
+    initPeopleRoll();
+    renderList();
+  }
+}
+
+// ─── Rolling people picker (iPhone-wheel-style horizontal swipe) ────────
+function initPeopleRoll() {
+  const roll = document.getElementById('people-roll');
+  if (!roll) return;
+  const items = Array.from(roll.querySelectorAll('.people-roll-item'));
+  if (!items.length) return;
+
+  function scrollToItem(item, smooth) {
+    const target = item.offsetLeft - (roll.clientWidth - item.offsetWidth) / 2;
+    roll.scrollTo({ left: Math.max(0, target), behavior: smooth ? 'smooth' : 'instant' });
+  }
+  function centeredItem() {
+    const center = roll.scrollLeft + roll.clientWidth / 2;
+    let closest = items[0], minDist = Infinity;
+    items.forEach(item => {
+      const c = item.offsetLeft + item.offsetWidth / 2;
+      const d = Math.abs(c - center);
+      if (d < minDist) { minDist = d; closest = item; }
+    });
+    return closest;
+  }
+  function applySelection() {
+    const c = centeredItem();
+    items.forEach(i => i.classList.toggle('is-selected', i === c));
+    const v = c.dataset.value;
+    const hiddenMobile  = document.getElementById('people-input');
+    const hiddenDesktop = document.getElementById('people-input-d');
+    if (hiddenMobile)  hiddenMobile.value  = v;
+    if (hiddenDesktop) hiddenDesktop.value = v;
+    if (document.getElementById('view-list').classList.contains('active')) renderList();
+  }
+
+  const hidden = document.getElementById('people-input');
+  const startVal = (hidden && hidden.value) || '250';
+  const startItem = roll.querySelector(`[data-value="${startVal}"]`) || items[1] || items[0];
+
+  if (!roll.dataset.wired) {
+    roll.dataset.wired = '1';
+    let scrollTimer = null;
+    roll.addEventListener('scroll', () => {
+      clearTimeout(scrollTimer);
+      scrollTimer = setTimeout(applySelection, 120);
+    });
+    items.forEach(item => {
+      item.addEventListener('click', () => scrollToItem(item, true));
+    });
+  }
+  requestAnimationFrame(() => {
+    scrollToItem(startItem, false);
+    items.forEach(i => i.classList.toggle('is-selected', i === startItem));
+  });
 }
 
 // ─── Unit mode ───────────────────────────────────────────

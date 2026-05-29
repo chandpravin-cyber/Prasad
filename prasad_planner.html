@@ -41,9 +41,105 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.25);
     flex-shrink: 0;
   }
-  .app-header h1 { font-size: 17px; font-weight: 700; }
+  .app-header h1 { font-size: 17px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+  .header-logo {
+    height: calc((var(--header-h) - 18px) / 2);   /* half the previous size */
+    width: auto;
+    border-radius: 5px;
+    object-fit: cover;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.25);
+    border: 1px solid rgba(255,255,255,0.4);
+    vertical-align: middle;
+  }
   .app-header .subtitle { font-size: 11px; opacity: 0.75; margin-top: 1px; }
   .header-left { display: flex; flex-direction: column; }
+  .header-photo {
+    height: calc(var(--header-h) - 12px);
+    width: auto;
+    max-width: 38vw;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-left: auto;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+    border: 1px solid rgba(255,255,255,0.35);
+  }
+  /* View-specific header swap */
+  .show-on-list { display: none !important; }
+  body.on-list .show-on-list { display: flex !important; }
+  body.on-list .show-on-menu { display: none !important; }
+
+  /* Make the header a positioning context so we can absolutely-center the photo */
+  body.on-list .app-header { position: relative; }
+
+  /* Deity photo centered in the middle of the shopping-list header.
+     max-width is constrained so it never extends over the title or the
+     people-stack on either side. */
+  .middle-photo {
+    height: calc(var(--header-h) - 18px);
+    width: auto;
+    max-width: 22vw;
+    object-fit: cover;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+    border: 1px solid rgba(255,255,255,0.4);
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  /* Keep title and people-stack above the absolutely-positioned photo
+     so they remain readable even if the photo is wider than expected */
+  body.on-list .header-left { position: relative; z-index: 2; flex-shrink: 0; }
+  body.on-list .people-stack { position: relative; z-index: 2; }
+
+  /* People label above the rolling picker on the right of the header */
+  .people-stack {
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    margin-left: auto;
+    flex-shrink: 0;
+    z-index: 1;
+  }
+  .people-stack-label {
+    font-size: 10px; color: #fff; opacity: 0.9;
+    font-weight: 700; letter-spacing: 0.5px;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+
+  /* Horizontal rolling (wheel-style) picker — iPhone-like swipe & snap */
+  .people-roll {
+    width: 96px; height: 28px;
+    overflow-x: auto; overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none; -ms-overflow-style: none;
+    display: flex; align-items: stretch;
+    background: rgba(255,255,255,0.96);
+    border-radius: 14px;
+    position: relative;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.12);
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 22%, black 78%, transparent 100%);
+            mask-image: linear-gradient(to right, transparent 0%, black 22%, black 78%, transparent 100%);
+  }
+  .people-roll::-webkit-scrollbar { display: none; }
+  .people-roll-pad { flex: 0 0 33px; }
+  .people-roll-item {
+    flex: 0 0 30px;
+    scroll-snap-align: center;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+    color: #b3a8a0;
+    cursor: pointer; user-select: none;
+    transition: color 0.15s, font-size 0.15s, transform 0.15s;
+  }
+  .people-roll-item.is-selected {
+    color: var(--primary);
+    font-size: 16px;
+    transform: scale(1.04);
+  }
   .people-badge {
     display: flex; align-items: center; gap: 6px;
     background: rgba(255,255,255,0.15);
@@ -191,10 +287,21 @@
   /* SHOPPING LIST */
   .list-toolbar {
     background: #fff; border-bottom: 1px solid var(--border);
-    padding: 10px 12px; display: flex; flex-direction: column; gap: 8px;
-    position: sticky; top: var(--header-h); z-index: 50;
+    padding: 6px 12px; display: flex; flex-direction: column; gap: 4px;
+    /* top:0 because .list-toolbar is sticky INSIDE .app-body, which already starts
+       below the header — using var(--header-h) here would create a 56px gap on scroll. */
+    position: sticky; top: 0; z-index: 50;
+    margin-top: 0;
   }
+  /* When on shopping-list page, visually merge with the header — no gap, no shadow */
+  body.on-list .app-header { box-shadow: none; }
+  body.on-list .list-toolbar { box-shadow: none; border-top: 0; padding-top: 4px; }
   .list-toolbar-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .list-summary-line {
+    font-size: 11px; color: var(--muted);
+    margin-top: 2px; line-height: 1.2;
+    padding-left: 4px;
+  }
   .unit-seg {
     display: flex; background: var(--bg);
     border-radius: 20px; border: 1.5px solid var(--border); overflow: hidden;
@@ -351,13 +458,32 @@
 
 <header class="app-header">
   <div class="header-left">
-    <h1>🍛 Prasad Menu</h1>
-    <div class="subtitle">Ingredient Planner</div>
+    <h1><img src="icons/logo.jpg" alt="" class="header-logo" onerror="this.style.display='none'"> Prasad Menu</h1>
   </div>
-  <div class="people-badge">
-    <label>People:</label>
-    <input type="number" id="people-input" value="250" min="1" max="10000">
+  <!-- Photo on the right of the header — Menu page only -->
+  <img src="icons/deities.jpg" alt="Jagannath" class="header-photo show-on-menu" onerror="this.style.display='none'">
+
+  <!-- Photo centered in the header — Shopping List page only -->
+  <img src="icons/deities.jpg" alt="Jagannath" class="middle-photo show-on-list" onerror="this.style.display='none'">
+
+  <!-- People label + rolling picker (right side of header on Shopping List page) -->
+  <div class="people-stack show-on-list">
+    <div class="people-stack-label">People</div>
+    <div class="people-roll" id="people-roll">
+      <div class="people-roll-pad"></div>
+      <div class="people-roll-item" data-value="200">200</div>
+      <div class="people-roll-item" data-value="250">250</div>
+      <div class="people-roll-item" data-value="300">300</div>
+      <div class="people-roll-item" data-value="350">350</div>
+      <div class="people-roll-item" data-value="400">400</div>
+      <div class="people-roll-item" data-value="450">450</div>
+      <div class="people-roll-item" data-value="500">500</div>
+      <div class="people-roll-pad"></div>
+    </div>
   </div>
+
+  <!-- Hidden people input preserved so existing JS keeps working -->
+  <input type="hidden" id="people-input" value="250">
 </header>
 
 <div class="app-body">
@@ -394,11 +520,8 @@
 
   <!-- MENU VIEW -->
   <div class="view" id="view-menu">
-    <div class="menu-toolbar">
-      <button class="btn-sm filled" onclick="selectAll()">Select All</button>
-      <button class="btn-sm" onclick="clearAll()">Clear All</button>
-      <span class="menu-stats" id="menu-stats">0 dishes selected</span>
-    </div>
+    <!-- Hidden menu-stats element kept for JS that updates it -->
+    <span class="menu-stats" id="menu-stats" style="display:none">0 dishes selected</span>
     <div id="menu-container"></div>
   </div>
 
@@ -411,16 +534,17 @@
           <button onclick="setUnit('imperial')" id="unit-imperial">Imperial</button>
           <button onclick="setUnit('metric')" id="unit-metric">Metric</button>
         </div>
-        <span id="list-summary" class="summary-pill">0 dishes</span>
         <button class="pdf-btn" onclick="openPdfModal()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
             <polyline points="7 10 12 15 17 10"/>
             <line x1="12" y1="15" x2="12" y2="3"/>
           </svg>
-          Save Shopping List
+          Save List
         </button>
       </div>
+      <!-- Tiny dish/ingredient count BELOW the unit selector -->
+      <div id="list-summary" class="list-summary-line">0 dishes</div>
       <div class="list-toolbar-row">
         <label style="font-size:12px; color:var(--muted)">Show:</label>
         <label style="display:flex;align-items:center;gap:4px;font-size:12px">
@@ -448,7 +572,7 @@
       <button class="modal-cancel" onclick="closePdfModal()">Cancel</button>
       <button class="modal-go" id="modal-go-btn" onclick="generatePdf()" disabled>
         <div class="gen-spinner" id="gen-spinner"></div>
-        <span id="go-label">Generate PDF →</span>
+        <span id="go-label">Copy link</span>
       </button>
     </div>
     <div class="result-card" id="result-card">
@@ -603,6 +727,7 @@ async function boot() {
 function showApp() {
   switchView('menu');
   document.getElementById('tab-menu').classList.add('active');
+  document.body.classList.add('on-menu');
   renderMenu();
 }
 
@@ -634,7 +759,74 @@ function switchTab(tab) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('tab-' + tab).classList.add('active');
   switchView(tab);
-  if (tab === 'list') renderList();
+  // Toggle a body class so the header can swap photo/picker based on the page
+  document.body.classList.toggle('on-list', tab === 'list');
+  document.body.classList.toggle('on-menu', tab === 'menu');
+  if (tab === 'list') {
+    // The roll element has no size when hidden, so initialize on first view
+    initPeopleRoll();
+    renderList();
+  }
+}
+
+// ─── Rolling people picker (iPhone-wheel-style horizontal swipe) ────────
+function initPeopleRoll() {
+  const roll = document.getElementById('people-roll');
+  if (!roll) return;
+  const items = Array.from(roll.querySelectorAll('.people-roll-item'));
+  if (!items.length) return;
+
+  function scrollToItem(item, smooth) {
+    const target = item.offsetLeft - (roll.clientWidth - item.offsetWidth) / 2;
+    roll.scrollTo({ left: Math.max(0, target), behavior: smooth ? 'smooth' : 'instant' });
+  }
+
+  function centeredItem() {
+    const center = roll.scrollLeft + roll.clientWidth / 2;
+    let closest = items[0], minDist = Infinity;
+    items.forEach(item => {
+      const c = item.offsetLeft + item.offsetWidth / 2;
+      const d = Math.abs(c - center);
+      if (d < minDist) { minDist = d; closest = item; }
+    });
+    return closest;
+  }
+
+  function applySelection() {
+    const c = centeredItem();
+    items.forEach(i => i.classList.toggle('is-selected', i === c));
+    const v = c.dataset.value;
+    const hidden = document.getElementById('people-input');
+    if (hidden && hidden.value !== v) {
+      hidden.value = v;
+      if (document.getElementById('view-list').classList.contains('active')) renderList();
+    }
+  }
+
+  // Center the initial value (matches the hidden input or defaults to 250)
+  const hidden = document.getElementById('people-input');
+  const startVal = (hidden && hidden.value) || '250';
+  const startItem = roll.querySelector(`[data-value="${startVal}"]`) || items[1] || items[0];
+
+  // Only wire up handlers once
+  if (!roll.dataset.wired) {
+    roll.dataset.wired = '1';
+    let scrollTimer = null;
+    roll.addEventListener('scroll', () => {
+      clearTimeout(scrollTimer);
+      scrollTimer = setTimeout(applySelection, 120);
+    });
+    items.forEach(item => {
+      item.addEventListener('click', () => scrollToItem(item, true));
+    });
+  }
+
+  // Always re-center on (re)entry to the view, because clientWidth may have
+  // been zero on first render while the element was display:none.
+  requestAnimationFrame(() => {
+    scrollToItem(startItem, false);
+    items.forEach(i => i.classList.toggle('is-selected', i === startItem));
+  });
 }
 
 // ─── Unit mode ───────────────────────────────────────────
@@ -874,7 +1066,7 @@ function openPdfModal() {
     'Name your PDF — it will be saved to the PDF/ folder and a shareable link will be created.';
   inp.value = '';
   document.getElementById('modal-go-btn').disabled = true;
-  document.getElementById('go-label').textContent = 'Generate PDF →';
+  document.getElementById('go-label').textContent = 'Copy link';
   document.getElementById('gen-spinner').style.display = 'none';
   modal.classList.add('open');
   setTimeout(() => inp.focus(), 350);
@@ -927,17 +1119,39 @@ async function generatePdf() {
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || 'Unknown error');
 
-    // Show shareable links
+    // Show shareable links (kept as a visible fallback in case auto-copy fails)
     document.getElementById('url-local').textContent = data.url_local;
     document.getElementById('url-wifi').textContent  = data.url_wifi;
     document.getElementById('result-card').classList.add('show');
-    document.getElementById('modal-sub').textContent = `"${data.filename}" saved to the PDF/ folder.`;
-    document.getElementById('go-label').textContent  = 'Saved ✓';
+
+    // Auto-copy the shareable link to the clipboard.
+    // Prefer the Wi-Fi URL (works for sharing with other devices on the same network);
+    // fall back to the local URL if Wi-Fi isn't available.
+    const linkToCopy = data.url_wifi || data.url_local;
+    let copied = false;
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(linkToCopy);
+        copied = true;
+      }
+    } catch (clipErr) {
+      // Some browsers (esp. iOS Safari over plain http) block clipboard
+      // writes after an awaited async operation. The link is still visible
+      // below for manual copy.
+      copied = false;
+    }
+    if (copied) {
+      document.getElementById('modal-sub').textContent = `Link copied to clipboard: ${linkToCopy}`;
+      document.getElementById('go-label').textContent  = 'Copied ✓';
+    } else {
+      document.getElementById('modal-sub').textContent = `"${data.filename}" saved. Tap Copy below to copy the link.`;
+      document.getElementById('go-label').textContent  = 'Saved ✓';
+    }
 
   } catch (e) {
     alert('Could not reach the server.\n\n' + e.message +
           '\n\nMake sure server.py is running:\n  python3 server.py');
-    document.getElementById('go-label').textContent = 'Generate PDF →';
+    document.getElementById('go-label').textContent = 'Copy link';
   } finally {
     document.getElementById('gen-spinner').style.display = 'none';
     document.getElementById('modal-go-btn').disabled = false;
