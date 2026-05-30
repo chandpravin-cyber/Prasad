@@ -844,16 +844,21 @@
   .mobile-only  { display: flex; }
 
   /* ═════════════════════════════════════════════════════════
-     DESKTOP CLASSIC DASHBOARD THEME (≥1024px)
-     Solid maroon header bar, white card columns, no glass.
+     DESKTOP PROFESSIONAL THEME — Light Blue (≥1024px)
+     Navy header, soft sky-blue canvas, white cards.
      Mobile Liquid Glass is completely untouched.
      ═════════════════════════════════════════════════════════ */
   @media (min-width: 1024px) {
     :root { --tab-h: 0px; --header-h: 72px; }
 
     body.desktop {
-      background: #F5F0EB;
+      background:
+        radial-gradient(1200px 600px at 80% -10%, #F0F7FE 0%, transparent 60%),
+        radial-gradient(900px 500px at -10% 110%, #F4F9FE 0%, transparent 60%),
+        linear-gradient(180deg, #F6FAFE 0%, #EEF4FB 100%);
       overflow: auto;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
+      color: #0F1F3A;
     }
     body.desktop .bg-canvas,
     body.desktop .bg-grain { display: none !important; }
@@ -861,71 +866,92 @@
     body.desktop .desktop-only { display: flex; }
     body.desktop .mobile-only  { display: none !important; }
 
-    /* ── HEADER — full-width solid maroon bar ─────────────── */
+    /* ── HEADER — professional navy gradient bar ──────────── */
     body.desktop .app-header {
       position: sticky; top: 0; z-index: 100;
       margin: 0; border-radius: 0;
       width: 100%; max-width: none;
-      height: auto; min-height: 92px;
-      padding: 14px 24px;
-      background: linear-gradient(180deg, #9A2424, #7A1414);
+      height: auto; min-height: 88px;
+      padding: 14px 28px;
+      background: linear-gradient(180deg, #1E5FAD 0%, #134B8E 60%, #0E3F7A 100%);
       backdrop-filter: none; -webkit-backdrop-filter: none;
-      border: none; border-bottom: 1px solid rgba(0,0,0,0.15);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+      border: none; border-bottom: 1px solid rgba(8,40,90,0.35);
+      box-shadow: 0 4px 14px rgba(14, 63, 122, 0.22), 0 1px 0 rgba(255,255,255,0.18) inset;
       display: grid;
       grid-template-columns: auto 1fr auto;
       grid-template-rows: auto auto;
       grid-template-areas:
         "title  controls actions"
         "title  controls actions";
-      gap: 4px 24px;
+      gap: 4px 28px;
       align-items: center;
       color: #fff;
     }
     body.desktop .app-header::before,
     body.desktop .app-header::after { display: none !important; }
 
-    body.desktop .header-left { grid-area: title; }
+    body.desktop .header-left { grid-area: title; display: flex; align-items: center; }
     body.desktop .app-header h1 {
       font-size: 22px; font-weight: 700;
       background: none; -webkit-text-fill-color: #fff; color: #fff;
-      letter-spacing: -0.2px;
+      letter-spacing: -0.3px;
+      display: flex; align-items: center; gap: 10px;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.15);
+    }
+    body.desktop .header-logo {
+      height: 36px; width: 36px; border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.55);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.20);
     }
     body.desktop .app-header .logo-emoji { font-size: 22px; margin-right: 4px; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.2)); }
     body.desktop .app-header .subtitle { display: none; }
+    body.desktop .header-photo { display: none !important; }
 
     body.desktop .header-controls {
       grid-area: controls;
-      display: flex; gap: 18px; align-items: center; flex-wrap: wrap;
+      display: flex; gap: 20px; align-items: center; flex-wrap: wrap;
       justify-self: start;
     }
     body.desktop .header-field {
-      display: flex; align-items: center; gap: 8px;
+      display: flex; align-items: center; gap: 9px;
       font-size: 13px; color: #fff; font-weight: 500;
     }
-    body.desktop .header-field span { opacity: 0.92; }
+    body.desktop .header-field span { opacity: 0.95; letter-spacing: 0.1px; }
     body.desktop .header-field input[type="number"] {
-      width: 70px; padding: 7px 10px;
-      border: 1px solid rgba(255,255,255,0.30);
-      background: #F5DC60; color: #1A1208;
-      border-radius: 6px; font-size: 14px; font-weight: 700;
+      width: 78px; padding: 8px 10px;
+      border: 1px solid rgba(255,255,255,0.45);
+      background: #fff; color: #0F1F3A;
+      border-radius: 8px; font-size: 14px; font-weight: 700;
       text-align: center; outline: none;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.10) inset;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    body.desktop .header-field input[type="number"]:focus {
+      border-color: #B6D6FA;
+      box-shadow: 0 0 0 3px rgba(182,214,250,0.35), 0 1px 2px rgba(0,0,0,0.08) inset;
     }
     body.desktop .header-field select {
-      padding: 7px 28px 7px 12px;
-      background: #fff url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' stroke='%231A1208' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>") no-repeat right 10px center;
-      border: 1px solid rgba(255,255,255,0.30);
-      border-radius: 6px; font-size: 13px; font-weight: 500; color: #1A1208;
+      padding: 8px 30px 8px 12px;
+      background: #fff url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' stroke='%23134B8E' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>") no-repeat right 10px center;
+      border: 1px solid rgba(255,255,255,0.45);
+      border-radius: 8px; font-size: 13px; font-weight: 600; color: #0F1F3A;
       -webkit-appearance: none; appearance: none;
       cursor: pointer; outline: none;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.10) inset;
+      min-width: 96px;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    body.desktop .header-field select:focus {
+      border-color: #B6D6FA;
+      box-shadow: 0 0 0 3px rgba(182,214,250,0.35), 0 1px 2px rgba(0,0,0,0.08) inset;
     }
     body.desktop .header-check {
-      display: flex; align-items: center; gap: 7px;
+      display: flex; align-items: center; gap: 8px;
       color: #fff; font-size: 13px; font-weight: 500; cursor: pointer;
-      opacity: 0.95;
+      opacity: 0.96;
     }
     body.desktop .header-check input[type="checkbox"] {
-      width: 16px; height: 16px; accent-color: #fff; cursor: pointer;
+      width: 16px; height: 16px; accent-color: #5AA3F0; cursor: pointer;
     }
 
     body.desktop .header-actions {
@@ -934,25 +960,30 @@
     }
     body.desktop .hdr-btn {
       padding: 9px 18px; border: 1.5px solid rgba(255,255,255,0.85);
-      background: transparent; color: #fff;
-      border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer;
-      transition: background 0.15s, transform 0.1s;
+      background: rgba(255,255,255,0.08); color: #fff;
+      border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer;
+      transition: background 0.15s, transform 0.1s, border-color 0.15s;
       display: inline-flex; align-items: center;
+      letter-spacing: 0.2px;
     }
-    body.desktop .hdr-btn:hover  { background: rgba(255,255,255,0.10); }
+    body.desktop .hdr-btn:hover  { background: rgba(255,255,255,0.18); border-color: #fff; }
     body.desktop .hdr-btn:active { transform: scale(0.97); }
     body.desktop .hdr-btn-primary {
-      background: #E89530; border-color: #E89530; color: #fff;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+      background: linear-gradient(180deg, #FFB347, #E89530);
+      border-color: rgba(0,0,0,0.10); color: #fff;
+      box-shadow: 0 2px 6px rgba(232, 149, 48, 0.35), 0 1px 0 rgba(255,255,255,0.25) inset;
     }
-    body.desktop .hdr-btn-primary:hover { background: #D88420; border-color: #D88420; }
+    body.desktop .hdr-btn-primary:hover {
+      background: linear-gradient(180deg, #FFA730, #D88420);
+      border-color: rgba(0,0,0,0.12);
+    }
 
     /* ── BODY: two-column grid ───────────────────────────── */
     body.desktop .app-body {
       display: grid;
-      grid-template-columns: 340px 1fr;
-      gap: 18px;
-      padding: 18px 24px 28px;
+      grid-template-columns: 360px 1fr;
+      gap: 22px;
+      padding: 22px 28px 32px;
       max-width: 1600px;
       margin: 0 auto;
       width: 100%;
@@ -979,15 +1010,20 @@
     /* ── LEFT MENU CARD ──────────────────────────────────── */
     body.desktop #view-menu {
       background: #fff;
-      border-radius: 10px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-      padding: 18px 18px 22px;
+      border-radius: 14px;
+      box-shadow: 0 1px 0 rgba(255,255,255,0.8) inset,
+                  0 4px 16px rgba(14, 63, 122, 0.10),
+                  0 1px 3px rgba(14, 63, 122, 0.06);
+      border: 1px solid rgba(14, 63, 122, 0.08);
+      padding: 20px 20px 24px;
     }
     body.desktop #view-menu::before {
       content: "MENU";
       display: block; padding: 0 0 14px;
-      font-size: 12px; letter-spacing: 1.5px;
-      color: #888; font-weight: 700;
+      font-size: 11px; letter-spacing: 1.8px;
+      color: #5A78A0; font-weight: 700;
+      border-bottom: 1px solid #E2EBF6;
+      margin-bottom: 12px;
     }
 
     /* Category blocks as colored pills with dishes flat underneath */
@@ -1027,16 +1063,17 @@
       padding: 4px 0 6px;
     }
     body.desktop .dish-item {
-      padding: 6px 8px;
+      padding: 7px 10px;
       gap: 10px;
       border-bottom: none;
-      border-radius: 6px;
+      border-radius: 8px;
+      transition: background 0.12s;
     }
-    body.desktop .dish-item:hover { background: #F5F0EB; }
-    body.desktop .dish-item:active { background: #ECE5DD; }
+    body.desktop .dish-item:hover { background: #EEF5FC; }
+    body.desktop .dish-item:active { background: #DDE9F7; }
     body.desktop .dish-check {
       width: 18px; height: 18px; border-radius: 4px;
-      border: 1.5px solid #B0A89F; background: #fff;
+      border: 1.5px solid #B7C5D8; background: #fff;
       box-shadow: none;
     }
     body.desktop .dish-item.selected .dish-check {
@@ -1045,14 +1082,17 @@
       box-shadow: none;
       transform: none;
     }
-    body.desktop .dish-name { font-size: 14px; color: #1A1208; font-weight: 500; }
+    body.desktop .dish-name { font-size: 14px; color: #102742; font-weight: 500; }
     body.desktop .dish-count-badge { display: none; }
 
     /* ── RIGHT: SHOPPING LIST CARD ───────────────────────── */
     body.desktop #view-list {
       background: #fff;
-      border-radius: 10px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      border-radius: 14px;
+      box-shadow: 0 1px 0 rgba(255,255,255,0.8) inset,
+                  0 4px 16px rgba(14, 63, 122, 0.10),
+                  0 1px 3px rgba(14, 63, 122, 0.06);
+      border: 1px solid rgba(14, 63, 122, 0.08);
       overflow: hidden;
     }
     body.desktop .section-block {
@@ -1062,7 +1102,7 @@
       box-shadow: none;
       margin: 0;
       border-radius: 0;
-      border-bottom: 1px solid #E8E2DA;
+      border-bottom: 1px solid #E2EBF6;
     }
     body.desktop .section-block::before,
     body.desktop .section-block.lg::before,
@@ -1071,55 +1111,62 @@
 
     body.desktop .combined-header,
     body.desktop .dish-section-header {
-      padding: 14px 20px;
+      padding: 14px 22px;
       font-size: 16px; font-weight: 700;
-      background: #2C3E50 !important;
+      background: linear-gradient(180deg, #1E5FAD, #134B8E) !important;
       color: #fff;
       gap: 10px;
+      letter-spacing: 0.1px;
     }
     body.desktop .dish-section-header {
-      background: var(--cat-color, #8B1A1A) !important;
+      background: var(--cat-color, #134B8E) !important;
       font-size: 15px;
     }
     body.desktop .combined-stats,
-    body.desktop .ing-count { font-size: 12px; opacity: 0.85; font-weight: 500; }
+    body.desktop .ing-count { font-size: 12px; opacity: 0.92; font-weight: 500; }
 
     /* Table: column-tinted, double-row header */
     body.desktop .table-header-row {
-      background: #ECE5DD;
-      color: #4A3A2A;
+      background: #E6EFFA;
+      color: #1F3A66;
       font-size: 12px; font-weight: 700;
-      letter-spacing: 0.3px;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      border-bottom: 1px solid #CCDBED;
     }
     body.desktop .table-header-row.both    { grid-template-columns: 56px minmax(160px,1.4fr) 110px 90px 110px 90px minmax(120px,0.8fr); }
     body.desktop .table-header-row.imperial{ grid-template-columns: 56px minmax(160px,1.4fr) 130px 100px minmax(120px,0.8fr); }
     body.desktop .table-header-row.metric  { grid-template-columns: 56px minmax(160px,1.4fr) 130px 100px minmax(120px,0.8fr); }
-    body.desktop .th { padding: 11px 10px; font-size: 12px; text-transform: none; }
-    body.desktop .th-imp { background: #E89530; color: #fff; }
-    body.desktop .th-met { background: #2A8073; color: #fff; }
+    body.desktop .th { padding: 12px 10px; font-size: 11.5px; text-transform: uppercase; }
+    body.desktop .th-imp { background: linear-gradient(180deg, #5AA3F0, #3A86D8); color: #fff; letter-spacing: 0.4px; }
+    body.desktop .th-met { background: linear-gradient(180deg, #4FB8AE, #2F8C82); color: #fff; letter-spacing: 0.4px; }
 
     body.desktop .ing-row {
-      font-size: 14px; color: #1A1208;
-      border-bottom: 1px solid #F0EAE2;
+      font-size: 14px; color: #102742;
+      border-bottom: 1px solid #EDF2F9;
+      transition: background 0.12s;
     }
     body.desktop .ing-row.both    { grid-template-columns: 56px minmax(160px,1.4fr) 110px 90px 110px 90px minmax(120px,0.8fr); }
     body.desktop .ing-row.imperial{ grid-template-columns: 56px minmax(160px,1.4fr) 130px 100px minmax(120px,0.8fr); }
     body.desktop .ing-row.metric  { grid-template-columns: 56px minmax(160px,1.4fr) 130px 100px minmax(120px,0.8fr); }
-    body.desktop .ing-row:nth-child(even) { background: #FDFBF7; }
-    body.desktop .ing-row:hover { background: #F5F0EB; }
+    body.desktop .ing-row:nth-child(even) { background: #F7FAFD; }
+    body.desktop .ing-row:hover { background: #EAF2FB; }
     body.desktop .td { padding: 12px 10px; font-size: 13px; }
-    body.desktop .td-num { color: #888; font-weight: 500; font-size: 13px; }
-    body.desktop .td-qty-imp { color: #1A1208; font-weight: 700; background: #FDF1E2; }
-    body.desktop .td-qty-met { color: #1A1208; font-weight: 700; background: #E4F2EE; }
-    body.desktop .td:nth-child(4) { background: #FDF1E2; color: #6B5A4A; }
-    body.desktop .ing-row.both .td:nth-child(6) { background: #E4F2EE; color: #6B5A4A; }
+    body.desktop .td-num { color: #7E91AE; font-weight: 600; font-size: 12.5px; }
+    body.desktop .td-qty-imp { color: #0F2A4F; font-weight: 700; background: #E8F1FB; }
+    body.desktop .td-qty-met { color: #0E3F38; font-weight: 700; background: #E2F2EF; }
+    body.desktop .td:nth-child(4) { background: #EEF5FC; color: #4A6588; }
+    body.desktop .ing-row.both .td:nth-child(6) { background: #EAF5F2; color: #3D5C57; }
     body.desktop .td-used {
-      color: #1A1208; font-size: 12px;
+      color: #102742; font-size: 12px;
       display: flex; flex-wrap: wrap; gap: 4px;
     }
-    body.desktop .td-used:empty::before { content: "—"; color: #B0A89F; }
+    body.desktop .td-used:empty::before { content: "—"; color: #B7C5D8; }
 
-    body.desktop .no-selection { background: #fff; border: none; box-shadow: none; padding: 60px 24px; }
+    body.desktop .no-selection {
+      background: #fff; border: none; box-shadow: none;
+      padding: 64px 24px; color: #5A78A0;
+    }
   }
 
   @media (min-width: 1400px) {
@@ -1161,6 +1208,19 @@
 
   <!-- DESKTOP-ONLY inline controls -->
   <div class="header-controls desktop-only">
+    <label class="header-field">
+      <span>Number of People:</span>
+      <select id="people-input-d">
+        <option value="150">150</option>
+        <option value="200">200</option>
+        <option value="250" selected>250</option>
+        <option value="300">300</option>
+        <option value="350">350</option>
+        <option value="400">400</option>
+        <option value="450">450</option>
+        <option value="500">500</option>
+      </select>
+    </label>
     <label class="header-field">
       <span>Show:</span>
       <select id="unit-select-d">
@@ -1206,7 +1266,6 @@
     </div>
   </div>
 
-  <input type="hidden" id="people-input-d" value="250">
   <input type="hidden" id="people-input" value="250">
 </header>
 
@@ -1295,7 +1354,7 @@
       <button class="modal-cancel" onclick="closePdfModal()">Cancel</button>
       <button class="modal-go" id="modal-go-btn" onclick="generatePdf()" disabled>
         <div class="gen-spinner" id="gen-spinner"></div>
-        <span id="go-label">Generate PDF →</span>
+        <span id="go-label">Copy link</span>
       </button>
     </div>
     <div class="result-card" id="result-card">
@@ -1812,7 +1871,7 @@ function openPdfModal() {
     'Name your PDF — it will be saved to the PDF/ folder and a shareable link will be created.';
   inp.value = '';
   document.getElementById('modal-go-btn').disabled = true;
-  document.getElementById('go-label').textContent = 'Generate PDF →';
+  document.getElementById('go-label').textContent = 'Copy link';
   document.getElementById('gen-spinner').style.display = 'none';
   modal.classList.add('open');
   setTimeout(() => inp.focus(), 350);
@@ -1867,13 +1926,30 @@ async function generatePdf() {
     document.getElementById('url-local').textContent = data.url_local;
     document.getElementById('url-wifi').textContent  = data.url_wifi;
     document.getElementById('result-card').classList.add('show');
-    document.getElementById('modal-sub').textContent = `"${data.filename}" saved to the PDF/ folder.`;
-    document.getElementById('go-label').textContent  = 'Saved ✓';
+
+    // Auto-copy the shareable link to the clipboard.
+    const linkToCopy = data.url_wifi || data.url_local;
+    let copied = false;
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(linkToCopy);
+        copied = true;
+      }
+    } catch (clipErr) {
+      copied = false;
+    }
+    if (copied) {
+      document.getElementById('modal-sub').textContent = `Link copied to clipboard: ${linkToCopy}`;
+      document.getElementById('go-label').textContent  = 'Copied ✓';
+    } else {
+      document.getElementById('modal-sub').textContent = `"${data.filename}" saved. Tap Copy below to copy the link.`;
+      document.getElementById('go-label').textContent  = 'Saved ✓';
+    }
 
   } catch (e) {
     alert('Could not reach the server.\n\n' + e.message +
           '\n\nMake sure server.py is running:\n  python3 server.py');
-    document.getElementById('go-label').textContent = 'Generate PDF →';
+    document.getElementById('go-label').textContent = 'Copy link';
   } finally {
     document.getElementById('gen-spinner').style.display = 'none';
     document.getElementById('modal-go-btn').disabled = false;
