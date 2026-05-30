@@ -460,6 +460,24 @@
   }
   .list-toolbar { flex-direction: column; align-items: stretch; }
   .list-toolbar-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  /* Compact single-row toolbar for shopping-list view */
+  .list-toolbar.compact { padding: 6px 10px; }
+  .list-toolbar .compact-row {
+    flex-wrap: nowrap; gap: 6px; align-items: center;
+    justify-content: space-between; overflow: hidden;
+  }
+  .list-toolbar .compact-row .list-summary-line {
+    flex: 0 1 auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    font-size: 11px; line-height: 1.2;
+  }
+  .list-toolbar .compact-check {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11px; white-space: nowrap; color: var(--text-soft, #555);
+  }
+  .list-toolbar .compact-check input { width: 13px; height: 13px; margin: 0; }
+  .list-toolbar .pdf-btn.compact-btn {
+    padding: 5px 10px; font-size: 11px; gap: 4px; min-height: 0;
+  }
 
   .btn-sm {
     padding: 7px 16px; border-radius: var(--radius-pill);
@@ -1185,6 +1203,7 @@
     @page { margin: 1cm; size: A4; }
   }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body class="is-loading">
 
@@ -1221,26 +1240,19 @@
         <option value="500">500</option>
       </select>
     </label>
-    <label class="header-field">
-      <span>Show:</span>
-      <select id="unit-select-d">
-        <option value="imperial">Imperial only</option>
-        <option value="metric" selected>Metric only</option>
-      </select>
-    </label>
     <label class="header-check"><input type="checkbox" id="show-combined-d" checked> Combined shopping list</label>
     <label class="header-check"><input type="checkbox" id="show-perdish-d" checked> Per-dish breakdown</label>
     <label class="header-check"><input type="checkbox" id="show-compact-d"> Compact PDF (1-2 pages)</label>
   </div>
 
   <div class="header-actions desktop-only">
-    <button class="hdr-btn hdr-btn-primary" onclick="openPdfModal()">
+    <button class="hdr-btn hdr-btn-primary" onclick="downloadPdf()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" style="vertical-align:-2px;margin-right:4px">
         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
         <polyline points="7 10 12 15 17 10"/>
         <line x1="12" y1="15" x2="12" y2="3"/>
       </svg>
-      Save as PDF
+      Download
     </button>
   </div>
 
@@ -1308,31 +1320,19 @@
 
   <!-- SHOPPING LIST VIEW -->
   <div class="view" id="view-list">
-    <div class="list-toolbar lg">
-      <div class="list-toolbar-row">
-        <div class="unit-seg">
-          <button onclick="setUnit('imperial')" id="unit-imperial">Imperial</button>
-          <button onclick="setUnit('metric')" class="active" id="unit-metric">Metric</button>
-        </div>
-        <button class="pdf-btn" onclick="openPdfModal()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+    <div class="list-toolbar lg compact">
+      <div class="list-toolbar-row compact-row">
+        <span id="list-summary" class="list-summary-line">0 dishes</span>
+        <label class="compact-check"><input type="checkbox" id="show-combined" checked onchange="renderList()"> Combined</label>
+        <label class="compact-check"><input type="checkbox" id="show-perdish" checked onchange="renderList()"> Per-dish</label>
+        <button class="pdf-btn compact-btn" onclick="downloadPdf()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
             <polyline points="7 10 12 15 17 10"/>
             <line x1="12" y1="15" x2="12" y2="3"/>
           </svg>
-          Save List
+          Download
         </button>
-      </div>
-      <!-- Tiny dish/ingredient count BELOW the unit selector -->
-      <div id="list-summary" class="list-summary-line">0 dishes</div>
-      <div class="list-toolbar-row">
-        <label style="font-size:12px">Show:</label>
-        <label style="display:flex;align-items:center;gap:6px;font-size:12px">
-          <input type="checkbox" id="show-combined" checked onchange="renderList()"> Combined list
-        </label>
-        <label style="display:flex;align-items:center;gap:6px;font-size:12px">
-          <input type="checkbox" id="show-perdish" checked onchange="renderList()"> Per-dish
-        </label>
       </div>
     </div>
     <div id="list-container"></div>
@@ -1344,7 +1344,7 @@
   <div class="modal-sheet lg">
     <div class="modal-handle"></div>
     <div class="modal-title">💾 Save Shopping List</div>
-    <div class="modal-sub" id="modal-sub">Name your PDF — it will be saved to the PDF/ folder and a shareable link will be created.</div>
+    <div class="modal-sub" id="modal-sub">Name your PDF — it will be downloaded to your computer.</div>
     <input class="modal-input" id="pdf-name-input" type="text" placeholder="e.g. Prasad_June_2026" maxlength="80"
       oninput="document.getElementById('modal-go-btn').disabled = !this.value.trim()"
       onkeydown="if(event.key==='Enter' && this.value.trim()) generatePdf()">
@@ -1352,21 +1352,8 @@
       <button class="modal-cancel" onclick="closePdfModal()">Cancel</button>
       <button class="modal-go" id="modal-go-btn" onclick="generatePdf()" disabled>
         <div class="gen-spinner" id="gen-spinner"></div>
-        <span id="go-label">Copy link</span>
+        <span id="go-label">Save PDF</span>
       </button>
-    </div>
-    <div class="result-card" id="result-card">
-      <h4>✅ PDF saved!</h4>
-      <div class="url-row">
-        <span class="url-label">Local</span>
-        <span class="url-text" id="url-local"></span>
-        <button class="copy-btn" onclick="copyUrl('url-local')">Copy</button>
-      </div>
-      <div class="url-row">
-        <span class="url-label">Wi-Fi</span>
-        <span class="url-text" id="url-wifi"></span>
-        <button class="copy-btn" onclick="copyUrl('url-wifi')">Copy</button>
-      </div>
     </div>
   </div>
 </div>
@@ -1851,12 +1838,11 @@ function ingRow(num, name, impQty, impUnit, metric, convertible, usedIn) {
 function openPdfModal() {
   const modal = document.getElementById('pdf-modal');
   const inp   = document.getElementById('pdf-name-input');
-  document.getElementById('result-card').classList.remove('show');
   document.getElementById('modal-sub').textContent =
-    'Name your PDF — it will be saved to the PDF/ folder and a shareable link will be created.';
+    'Name your PDF — it will be downloaded to your computer.';
   inp.value = '';
   document.getElementById('modal-go-btn').disabled = true;
-  document.getElementById('go-label').textContent = 'Copy link';
+  document.getElementById('go-label').textContent = 'Save PDF';
   document.getElementById('gen-spinner').style.display = 'none';
   modal.classList.add('open');
   setTimeout(() => inp.focus(), 350);
@@ -1868,76 +1854,118 @@ function modalBgClick(e) {
   if (e.target === document.getElementById('pdf-modal')) closePdfModal();
 }
 
-async function generatePdf() {
-  const name = document.getElementById('pdf-name-input').value.trim();
-  if (!name) return;
+function buildPrintHtml(name) {
+  const people       = getPeople();
+  const showCombined = document.getElementById('show-combined').checked;
+  const showPerdish  = document.getElementById('show-perdish').checked;
+  const selDishes    = MENU_ORDER.filter(n => selected.has(n));
 
-  document.getElementById('gen-spinner').style.display = 'block';
-  document.getElementById('go-label').textContent      = 'Generating…';
-  document.getElementById('modal-go-btn').disabled     = true;
+  const css = `
+    <style>
+      *{box-sizing:border-box;}
+      body{font-family:Arial,Helvetica,sans-serif;color:#1a1a1a;margin:0;padding:14px;font-size:11px;}
+      .pdf-title{background:#8B1A1A;color:#fff;padding:10px 14px;border-radius:6px 6px 0 0;margin-bottom:6px;}
+      .pdf-title h1{font-size:18px;margin:0;font-weight:700;}
+      .pdf-title .sub{font-size:11px;opacity:0.85;margin-top:2px;}
+      .section-bar{background:#2C3E50;color:#fff;padding:7px 10px;font-weight:700;font-size:12px;border-radius:5px 5px 0 0;margin-top:10px;}
+      .section-bar .meta{float:right;font-weight:400;opacity:0.85;font-size:10px;}
+      table{width:100%;border-collapse:collapse;font-size:10.5px;margin-bottom:6px;}
+      th{padding:5px 6px;background:#1A7A6E;color:#fff;text-align:left;font-size:9px;text-transform:uppercase;}
+      th.num,th.qty{text-align:right;}
+      td{padding:4px 6px;border-bottom:1px solid #ece4dc;}
+      td.num,td.qty{text-align:right;}
+      td.qty{color:#1A7A6E;font-weight:700;}
+      td.unit{color:#888;}
+      tr:nth-child(even) td{background:#fbf7f2;}
+      td.used{color:#555;font-size:9.5px;}
+    </style>`;
 
-  try {
-    const people    = getPeople();
-    const selDishes = MENU_ORDER.filter(n => selected.has(n));
+  function rowsHtml(items, includeUsedIn) {
+    return items.map((ing, i) => {
+      const qty  = calcQty(ing.qty250, people);
+      const met  = toMetric(qty, ing.unit);
+      const conv = isConvertible(ing.unit);
+      const q    = conv ? met.val : fmtNum(qty);
+      const u    = conv ? met.unit : ing.unit;
+      return `<tr>
+        <td class="num">${i+1}</td>
+        <td>${ing.name}</td>
+        <td class="qty">${q}</td>
+        <td class="unit">${u}</td>
+        ${includeUsedIn ? `<td class="used">${[...new Set(ing.dishes)].join(', ')}</td>` : ''}
+      </tr>`;
+    }).join('');
+  }
 
-    const payload = {
-      filename:     name,
-      people:       people,
-      unitMode:     unitMode,
-      showCombined: document.getElementById('show-combined').checked,
-      showPerDish:  document.getElementById('show-perdish').checked,
-      categories:   CATEGORIES,
-      dishes:       selDishes.map(dishName => ({
-        name:        dishName,
-        category:    DISHES[dishName].category,
-        ingredients: DISHES[dishName].ingredients.map(ing => ({
-          name:   ing.name,
-          qty250: ing.qty250,
-          unit:   ing.unit
-        }))
-      }))
-    };
+  function headHtml(withUsed) {
+    return `<tr>
+      <th class="num">#</th><th>Ingredient</th>
+      <th class="qty">Qty</th><th>Unit</th>
+      ${withUsed ? '<th>Used in</th>' : ''}
+    </tr>`;
+  }
 
-    const res = await fetch('/save-pdf', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(payload)
+  let body = `${css}
+    <div class="pdf-title">
+      <h1>🍛 Prasad Menu – Ingredient Planner</h1>
+      <div class="sub">${selDishes.length} dishes · ${people} people</div>
+    </div>`;
+
+  if (showCombined) {
+    const combined = {};
+    selDishes.forEach(dn => {
+      DISHES[dn].ingredients.forEach(ing => {
+        const key = ing.name.toLowerCase();
+        if (!combined[key]) combined[key] = { name: ing.name, qty250: 0, unit: ing.unit, dishes: [] };
+        combined[key].qty250 += ing.qty250;
+        combined[key].dishes.push(dn);
+      });
     });
+    const rows = Object.values(combined).sort((a,b) => a.name.localeCompare(b.name));
+    body += `<div class="section-bar">🛒 Combined Shopping List
+      <span class="meta">${rows.length} ingredients</span></div>
+      <table>${headHtml(true)}${rowsHtml(rows, true)}</table>`;
+  }
 
-    if (!res.ok) throw new Error(`Server error ${res.status}`);
-    const data = await res.json();
-    if (!data.ok) throw new Error(data.error || 'Unknown error');
+  if (showPerdish) {
+    CATEGORIES.forEach(cat => {
+      selDishes.filter(n => DISHES[n].category === cat).forEach(dn => {
+        const dish = DISHES[dn];
+        const items = dish.ingredients.map(i => ({ ...i, dishes: [dn] }));
+        body += `<div class="section-bar" style="background:${catColor(cat)};">${dn}
+          <span class="meta">${dish.ingredients.length} ingredients</span></div>
+          <table>${headHtml(false)}${rowsHtml(items, false)}</table>`;
+      });
+    });
+  }
 
-    document.getElementById('url-local').textContent = data.url_local;
-    document.getElementById('url-wifi').textContent  = data.url_wifi;
-    document.getElementById('result-card').classList.add('show');
+  return body;
+}
 
-    // Auto-copy the shareable link to the clipboard.
-    const linkToCopy = data.url_wifi || data.url_local;
-    let copied = false;
-    try {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        await navigator.clipboard.writeText(linkToCopy);
-        copied = true;
-      }
-    } catch (clipErr) {
-      copied = false;
-    }
-    if (copied) {
-      document.getElementById('modal-sub').textContent = `Link copied to clipboard: ${linkToCopy}`;
-      document.getElementById('go-label').textContent  = 'Copied ✓';
-    } else {
-      document.getElementById('modal-sub').textContent = `"${data.filename}" saved. Tap Copy below to copy the link.`;
-      document.getElementById('go-label').textContent  = 'Saved ✓';
-    }
-
+async function downloadPdf() {
+  if (typeof html2pdf === 'undefined') {
+    alert('PDF library not loaded. Check your internet connection and reload the page.');
+    return;
+  }
+  if (selected.size === 0) {
+    alert('Select at least one dish first.');
+    return;
+  }
+  try {
+    const html = buildPrintHtml('prasad');
+    const wrap = document.createElement('div');
+    wrap.innerHTML = html;
+    wrap.style.width = '780px';
+    await html2pdf().set({
+      margin:       [10, 10, 12, 10],
+      filename:     'prasad.pdf',
+      image:        { type: 'jpeg', quality: 0.95 },
+      html2canvas:  { scale: 2, useCORS: true },
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak:    { mode: ['css', 'legacy'] }
+    }).from(wrap).save();
   } catch (e) {
-    alert('Could not reach the server.\n\n' + e.message +
-          '\n\nMake sure server.py is running:\n  python3 server.py');
-    document.getElementById('go-label').textContent = 'Copy link';
-  } finally {
-    document.getElementById('gen-spinner').style.display = 'none';
-    document.getElementById('modal-go-btn').disabled = false;
+    alert('Could not generate PDF.\n\n' + e.message);
   }
 }
 

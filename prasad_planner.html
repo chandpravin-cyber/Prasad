@@ -453,6 +453,7 @@
     @page { margin: 1cm; size: A4; }
   }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 
@@ -529,17 +530,13 @@
   <div class="view" id="view-list">
     <div class="list-toolbar">
       <div class="list-toolbar-row">
-        <div class="unit-seg">
-          <button onclick="setUnit('imperial')" id="unit-imperial">Imperial</button>
-          <button onclick="setUnit('metric')" class="active" id="unit-metric">Metric</button>
-        </div>
-        <button class="pdf-btn" onclick="openPdfModal()">
+        <button class="pdf-btn" onclick="downloadPdf()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
             <polyline points="7 10 12 15 17 10"/>
             <line x1="12" y1="15" x2="12" y2="3"/>
           </svg>
-          Save List
+          Download
         </button>
       </div>
       <!-- Tiny dish/ingredient count BELOW the unit selector -->
@@ -563,7 +560,7 @@
   <div class="modal-sheet">
     <div class="modal-handle"></div>
     <div class="modal-title">💾 Save Shopping List</div>
-    <div class="modal-sub" id="modal-sub">Name your PDF — it will be saved to the PDF/ folder and a shareable link will be created.</div>
+    <div class="modal-sub" id="modal-sub">Name your PDF — it will be downloaded to your computer.</div>
     <input class="modal-input" id="pdf-name-input" type="text" placeholder="e.g. Prasad_June_2026" maxlength="80"
       oninput="document.getElementById('modal-go-btn').disabled = !this.value.trim()"
       onkeydown="if(event.key==='Enter' && this.value.trim()) generatePdf()">
@@ -571,21 +568,8 @@
       <button class="modal-cancel" onclick="closePdfModal()">Cancel</button>
       <button class="modal-go" id="modal-go-btn" onclick="generatePdf()" disabled>
         <div class="gen-spinner" id="gen-spinner"></div>
-        <span id="go-label">Copy link</span>
+        <span id="go-label">Download PDF</span>
       </button>
-    </div>
-    <div class="result-card" id="result-card">
-      <h4>✅ PDF saved!</h4>
-      <div class="url-row">
-        <span class="url-label">Local</span>
-        <span class="url-text" id="url-local"></span>
-        <button class="copy-btn" onclick="copyUrl('url-local')">Copy</button>
-      </div>
-      <div class="url-row">
-        <span class="url-label">Wi-Fi</span>
-        <span class="url-text" id="url-wifi"></span>
-        <button class="copy-btn" onclick="copyUrl('url-wifi')">Copy</button>
-      </div>
     </div>
   </div>
 </div>
@@ -1045,12 +1029,11 @@ document.getElementById('people-input').addEventListener('input', () => {
 function openPdfModal() {
   const modal = document.getElementById('pdf-modal');
   const inp   = document.getElementById('pdf-name-input');
-  document.getElementById('result-card').classList.remove('show');
   document.getElementById('modal-sub').textContent =
-    'Name your PDF — it will be saved to the PDF/ folder and a shareable link will be created.';
+    'Name your PDF — it will be downloaded to your computer.';
   inp.value = '';
   document.getElementById('modal-go-btn').disabled = true;
-  document.getElementById('go-label').textContent = 'Copy link';
+  document.getElementById('go-label').textContent = 'Download PDF';
   document.getElementById('gen-spinner').style.display = 'none';
   modal.classList.add('open');
   setTimeout(() => inp.focus(), 350);
@@ -1062,83 +1045,32 @@ function modalBgClick(e) {
   if (e.target === document.getElementById('pdf-modal')) closePdfModal();
 }
 
-async function generatePdf() {
-  const name = document.getElementById('pdf-name-input').value.trim();
-  if (!name) return;
-
-  document.getElementById('gen-spinner').style.display = 'block';
-  document.getElementById('go-label').textContent      = 'Generating…';
-  document.getElementById('modal-go-btn').disabled     = true;
-
+async function downloadPdf() {
+  if (typeof html2pdf === 'undefined') {
+    alert('PDF library not loaded. Check your internet connection and reload the page.');
+    return;
+  }
+  if (selected.size === 0) {
+    alert('Select at least one dish first.');
+    return;
+  }
   try {
     const people    = getPeople();
     const selDishes = MENU_ORDER.filter(n => selected.has(n));
-
-    // Build payload — send data, let the server make the PDF
-    const payload = {
-      filename:     name,
-      people:       people,
-      unitMode:     unitMode,
-      showCombined: document.getElementById('show-combined').checked,
-      showPerDish:  document.getElementById('show-perdish').checked,
-      categories:   CATEGORIES,
-      dishes:       selDishes.map(dishName => ({
-        name:        dishName,
-        category:    DISHES[dishName].category,
-        ingredients: DISHES[dishName].ingredients.map(ing => ({
-          name:   ing.name,
-          qty250: ing.qty250,
-          unit:   ing.unit
-        }))
-      }))
-    };
-
-    const res = await fetch('/save-pdf', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(payload)
-    });
-
-    if (!res.ok) throw new Error(`Server error ${res.status}`);
-    const data = await res.json();
-    if (!data.ok) throw new Error(data.error || 'Unknown error');
-
-    // Show shareable links (kept as a visible fallback in case auto-copy fails)
-    document.getElementById('url-local').textContent = data.url_local;
-    document.getElementById('url-wifi').textContent  = data.url_wifi;
-    document.getElementById('result-card').classList.add('show');
-
-    // Auto-copy the shareable link to the clipboard.
-    // Prefer the Wi-Fi URL (works for sharing with other devices on the same network);
-    // fall back to the local URL if Wi-Fi isn't available.
-    const linkToCopy = data.url_wifi || data.url_local;
-    let copied = false;
-    try {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        await navigator.clipboard.writeText(linkToCopy);
-        copied = true;
-      }
-    } catch (clipErr) {
-      // Some browsers (esp. iOS Safari over plain http) block clipboard
-      // writes after an awaited async operation. The link is still visible
-      // below for manual copy.
-      copied = false;
-    }
-    if (copied) {
-      document.getElementById('modal-sub').textContent = `Link copied to clipboard: ${linkToCopy}`;
-      document.getElementById('go-label').textContent  = 'Copied ✓';
-    } else {
-      document.getElementById('modal-sub').textContent = `"${data.filename}" saved. Tap Copy below to copy the link.`;
-      document.getElementById('go-label').textContent  = 'Saved ✓';
-    }
-
+    const html      = buildPrintHtml(selDishes, people);
+    const wrap      = document.createElement('div');
+    wrap.innerHTML  = html;
+    wrap.style.width = '780px';
+    await html2pdf().set({
+      margin:       [10, 10, 12, 10],
+      filename:     'prasad.pdf',
+      image:        { type: 'jpeg', quality: 0.95 },
+      html2canvas:  { scale: 2, useCORS: true },
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak:    { mode: ['css', 'legacy'] }
+    }).from(wrap).save();
   } catch (e) {
-    alert('Could not reach the server.\n\n' + e.message +
-          '\n\nMake sure server.py is running:\n  python3 server.py');
-    document.getElementById('go-label').textContent = 'Copy link';
-  } finally {
-    document.getElementById('gen-spinner').style.display = 'none';
-    document.getElementById('modal-go-btn').disabled = false;
+    alert('Could not generate PDF.\n\n' + e.message);
   }
 }
 

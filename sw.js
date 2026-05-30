@@ -2,7 +2,7 @@
    Caches the HTML, all CSVs, and icons so the app works offline.
    Bump CACHE_VERSION when you ship changes so old caches are wiped. */
 
-const CACHE_VERSION = 'prasad-v20';
+const CACHE_VERSION = 'prasad-v26';
 const ASSETS = [
   './',
   './index.html',
@@ -56,19 +56,38 @@ self.addEventListener('activate', event => {
   );
 });
 
+// HTML files use network-first so code updates show immediately.
+// Everything else (CSVs, icons, html2pdf bundle) is cache-first for speed/offline.
+function isHtmlRequest(req) {
+  if (req.mode === 'navigate') return true;
+  const url = new URL(req.url);
+  return url.pathname.endsWith('.html') || url.pathname.endsWith('/');
+}
+
 self.addEventListener('fetch', event => {
   const req = event.request;
+  if (req.method !== 'GET') return;
 
-  // Never cache the PDF-save endpoint — must hit the live server
-  if (req.url.includes('/save-pdf')) return;
+  if (isHtmlRequest(req)) {
+    // Network-first: always try fresh, fall back to cache when offline
+    event.respondWith(
+      fetch(req).then(resp => {
+        if (resp.ok && new URL(req.url).origin === self.location.origin) {
+          const respClone = resp.clone();
+          caches.open(CACHE_VERSION).then(c => c.put(req, respClone));
+        }
+        return resp;
+      }).catch(() => caches.match(req).then(c => c || caches.match('./index.html')))
+    );
+    return;
+  }
 
-  // Cache-first for everything else
+  // Cache-first for assets
   event.respondWith(
     caches.match(req).then(cached => {
       if (cached) return cached;
       return fetch(req).then(resp => {
-        // Cache successful same-origin GETs on the fly
-        if (req.method === 'GET' && resp.ok && new URL(req.url).origin === self.location.origin) {
+        if (resp.ok && new URL(req.url).origin === self.location.origin) {
           const respClone = resp.clone();
           caches.open(CACHE_VERSION).then(c => c.put(req, respClone));
         }
