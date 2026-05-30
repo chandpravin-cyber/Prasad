@@ -1061,17 +1061,52 @@ async function downloadPdf() {
     const wrap      = document.createElement('div');
     wrap.innerHTML  = html;
     wrap.style.width = '780px';
-    await html2pdf().set({
+
+    const worker = html2pdf().set({
       margin:       [10, 10, 12, 10],
       filename:     'prasad.pdf',
       image:        { type: 'jpeg', quality: 0.95 },
       html2canvas:  { scale: 2, useCORS: true },
       jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
       pagebreak:    { mode: ['css', 'legacy'] }
-    }).from(wrap).save();
+    }).from(wrap);
+
+    const blob = await worker.outputPdf('blob');
+    await deliverPdf(blob, 'prasad.pdf');
   } catch (e) {
     alert('Could not generate PDF.\n\n' + e.message);
   }
+}
+
+async function deliverPdf(blob, filename) {
+  const file = new File([blob], filename, { type: 'application/pdf' });
+  const ua   = navigator.userAgent || '';
+  const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file], title: 'Prasad Shopping List' });
+      return;
+    } catch (err) {
+      if (err && err.name === 'AbortError') return;
+    }
+  }
+
+  const url = URL.createObjectURL(blob);
+
+  if (isIOS) {
+    window.open(url, '_blank');
+    setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    return;
+  }
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 5_000);
 }
 
 function copyUrl(id) {

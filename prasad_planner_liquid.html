@@ -460,8 +460,22 @@
   }
   .list-toolbar { flex-direction: column; align-items: stretch; }
   .list-toolbar-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  /* Compact single-row toolbar for shopping-list view */
-  .list-toolbar.compact { padding: 6px 10px; }
+  /* Compact single-row toolbar for shopping-list view — match app-header glass */
+  .list-toolbar.compact {
+    padding: 8px 14px;
+    margin: 8px 10px 0;
+    backdrop-filter: var(--blur-strong);
+    -webkit-backdrop-filter: var(--blur-strong);
+    box-shadow: var(--glass-shadow);
+    position: relative;
+  }
+  .list-toolbar.compact::before {
+    content: ""; position: absolute; inset: 1px 1px auto 1px; height: 50%;
+    border-radius: calc(var(--radius) - 1px) calc(var(--radius) - 1px) 0 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0));
+    pointer-events: none;
+  }
+  .list-toolbar.compact > * { position: relative; z-index: 1; }
   .list-toolbar .compact-row {
     flex-wrap: nowrap; gap: 6px; align-items: center;
     justify-content: space-between; overflow: hidden;
@@ -498,7 +512,7 @@
 
   /* ── Category glass cards ─────────────────────────────── */
   .category-block {
-    margin: 14px 10px 0;
+    margin: 6px 10px 0;
     border-radius: var(--radius);
     overflow: hidden;
     box-shadow: var(--glass-shadow);
@@ -513,11 +527,12 @@
     background: linear-gradient(180deg, rgba(255,255,255,0.45), rgba(255,255,255,0));
     pointer-events: none;
   }
-  .category-block:last-child { margin-bottom: 14px; }
+  .category-block:first-child { margin-top: 10px; }
+  .category-block:last-child { margin-bottom: 10px; }
 
   .category-header {
     display: flex; align-items: center; gap: 8px;
-    padding: 12px 14px;
+    padding: 9px 12px;
     color: #fff;
     cursor: pointer; user-select: none;
     position: relative;
@@ -557,7 +572,7 @@
 
   .dish-item {
     display: flex; align-items: center; gap: 12px;
-    padding: 12px 14px;
+    padding: 8px 12px;
     border-bottom: 1px solid rgba(255,255,255,0.35);
     transition: background 0.15s;
     position: relative;
@@ -1956,17 +1971,54 @@ async function downloadPdf() {
     const wrap = document.createElement('div');
     wrap.innerHTML = html;
     wrap.style.width = '780px';
-    await html2pdf().set({
+
+    const worker = html2pdf().set({
       margin:       [10, 10, 12, 10],
       filename:     'prasad.pdf',
       image:        { type: 'jpeg', quality: 0.95 },
       html2canvas:  { scale: 2, useCORS: true },
       jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
       pagebreak:    { mode: ['css', 'legacy'] }
-    }).from(wrap).save();
+    }).from(wrap);
+
+    const blob = await worker.outputPdf('blob');
+    await deliverPdf(blob, 'prasad.pdf');
   } catch (e) {
     alert('Could not generate PDF.\n\n' + e.message);
   }
+}
+
+// Choose the right download path for the current browser.
+// iOS Safari ignores <a download>, so prefer Web Share, else open blob URL in a new tab.
+async function deliverPdf(blob, filename) {
+  const file = new File([blob], filename, { type: 'application/pdf' });
+  const ua   = navigator.userAgent || '';
+  const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file], title: 'Prasad Shopping List' });
+      return;
+    } catch (err) {
+      if (err && err.name === 'AbortError') return;
+    }
+  }
+
+  const url = URL.createObjectURL(blob);
+
+  if (isIOS) {
+    window.open(url, '_blank');
+    setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    return;
+  }
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 5_000);
 }
 
 function copyUrl(id) {
