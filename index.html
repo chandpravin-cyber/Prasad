@@ -1231,9 +1231,8 @@
     <label class="header-field">
       <span>Show:</span>
       <select id="unit-select-d">
-        <option value="both" selected>Both Imperial &amp; Metric</option>
         <option value="imperial">Imperial only</option>
-        <option value="metric">Metric only</option>
+        <option value="metric" selected>Metric only</option>
       </select>
     </label>
     <label class="header-check"><input type="checkbox" id="show-combined-d" checked> Combined shopping list</label>
@@ -1322,9 +1321,8 @@
     <div class="list-toolbar lg">
       <div class="list-toolbar-row">
         <div class="unit-seg">
-          <button onclick="setUnit('both')" class="active" id="unit-both">Both</button>
           <button onclick="setUnit('imperial')" id="unit-imperial">Imperial</button>
-          <button onclick="setUnit('metric')" id="unit-metric">Metric</button>
+          <button onclick="setUnit('metric')" class="active" id="unit-metric">Metric</button>
         </div>
         <button class="pdf-btn" onclick="openPdfModal()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
@@ -1408,7 +1406,7 @@ let DISHES    = {};
 let MENU_ORDER = [];
 let CATEGORIES = [];
 let selected   = new Set();
-let unitMode   = 'both';
+let unitMode   = 'metric';
 let collapsed  = {};
 
 // ─── Desktop / mobile detection ─────────────────────────
@@ -1650,9 +1648,12 @@ function initPeopleRoll() {
 // ─── Unit mode ───────────────────────────────────────────
 function setUnit(mode) {
   unitMode = mode;
-  ['both','imperial','metric'].forEach(m =>
-    document.getElementById('unit-' + m).classList.toggle('active', m === mode)
-  );
+  ['imperial','metric'].forEach(m => {
+    const el = document.getElementById('unit-' + m);
+    if (el) el.classList.toggle('active', m === mode);
+  });
+  const sel = document.getElementById('unit-select-d');
+  if (sel && sel.value !== mode) sel.value = mode;
   renderList();
 }
 
@@ -1664,9 +1665,8 @@ function fmtNum(n) {
   return +n.toFixed(3);
 }
 function toMetric(qty, unit) {
-  if (unit === 'lb') {
-    const kg = qty * 0.453592;
-    return kg >= 1 ? { val: +kg.toFixed(3), unit: 'kg' } : { val: Math.round(kg * 1000), unit: 'g' };
+  if (unit === 'g' && qty >= 1000) {
+    return { val: +(qty / 1000).toFixed(3), unit: 'kg' };
   }
   if (unit === 'gallons') {
     const L = qty * 3.78541;
@@ -1674,7 +1674,7 @@ function toMetric(qty, unit) {
   }
   return { val: +qty.toFixed(2), unit };
 }
-function isConvertible(unit) { return unit === 'lb' || unit === 'gallons'; }
+function isConvertible(unit) { return unit === 'g' || unit === 'gallons'; }
 function getPeople() {
   const dv = getPeopleD();
   if (dv !== null && !isNaN(dv)) return dv;
@@ -1836,12 +1836,6 @@ function renderList() {
 }
 
 function tableHeader() {
-  if (unitMode === 'both')
-    return `<div class="table-header-row both">
-      <div class="th td-num">#</div><div class="th">Ingredient</div>
-      <div class="th th-imp" style="text-align:right">lb Qty</div><div class="th th-imp">Unit</div>
-      <div class="th th-met" style="text-align:right">Metric</div><div class="th th-met">Unit</div>
-      <div class="th">Used in</div></div>`;
   if (unitMode === 'imperial')
     return `<div class="table-header-row imperial">
       <div class="th td-num">#</div><div class="th">Ingredient</div>
@@ -1854,15 +1848,6 @@ function tableHeader() {
 }
 
 function ingRow(num, name, impQty, impUnit, metric, convertible, usedIn) {
-  if (unitMode === 'both') {
-    const mQ = convertible ? metric.val : impQty;
-    const mU = convertible ? metric.unit : impUnit;
-    return `<div class="ing-row both">
-      <div class="td td-num">${num}</div><div class="td">${name}</div>
-      <div class="td td-qty-imp" style="text-align:right">${impQty}</div><div class="td td-unit">${impUnit}</div>
-      <div class="td td-qty-met" style="text-align:right">${mQ}</div><div class="td td-unit">${mU}</div>
-      <div class="td td-used">${usedIn}</div></div>`;
-  }
   if (unitMode === 'imperial')
     return `<div class="ing-row imperial">
       <div class="td td-num">${num}</div><div class="td">${name}</div>
