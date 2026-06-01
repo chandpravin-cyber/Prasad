@@ -846,12 +846,13 @@
   /* ── DARK MODE TWEAKS ─────────────────────────────────── */
   @media (prefers-color-scheme: dark) {
     :root {
-      --glass-bg:       rgba(40, 28, 20, 0.50);
-      --glass-bg-strong:rgba(40, 28, 20, 0.65);
-      --glass-stroke:   rgba(255, 255, 255, 0.18);
-      --text:           #F5EADC;
-      --text-soft:      #C8B398;
-      --muted:          #9C8770;
+      /* More opaque + cool-toned panels so text stays legible over the bright background */
+      --glass-bg:       rgba(16, 24, 40, 0.74);
+      --glass-bg-strong:rgba(18, 28, 48, 0.86);
+      --glass-stroke:   rgba(255, 255, 255, 0.22);
+      --text:           #F4F8FF;
+      --text-soft:      #C2D1E6;
+      --muted:          #93A6C2;
       --glass-shadow:   0 10px 30px rgba(0,0,0,0.45),
                         0 1px 0 rgba(255,255,255,0.10) inset;
       --glass-shadow-sm:0 4px 14px rgba(0,0,0,0.30),
@@ -899,6 +900,15 @@
     .hero-status { color: var(--text-soft); }
     .hero-status b { color: #8FC8FF; }
     .search-empty { color: var(--text-soft); }
+
+    /* Brighten table text so quantities/units stay readable */
+    .dish-name, .ing-row, .td { color: var(--text); }
+    .td-qty-met { color: #5FD6C8; }   /* was dark teal — too dim on dark */
+    .td-qty-imp { color: #4FC8E8; }
+    .td-num, .td-unit, .td-used { color: var(--text-soft); }
+    .list-summary-line, .compact-check { color: var(--text-soft); }
+    .cat-count { color: #fff; }
+    .menu-toolbar label, .list-toolbar label { color: var(--text-soft); }
   }
 
   /* Default visibility helpers */
