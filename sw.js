@@ -2,7 +2,7 @@
    Caches the HTML, all CSVs, and icons so the app works offline.
    Bump CACHE_VERSION when you ship changes so old caches are wiped. */
 
-const CACHE_VERSION = 'prasad-v29';
+const CACHE_VERSION = 'prasad-v30';
 const ASSETS = [
   './',
   './index.html',

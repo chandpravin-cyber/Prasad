@@ -13,7 +13,7 @@ The site is now a Progressive Web App (PWA). After install it launches full-scre
 
 2. On your iPhone (same Wi-Fi as the Mac), open **Safari** (not Chrome — Add to Home Screen only works in Safari) and go to:
    ```
-   http://YOUR-MAC-IP:8080/prasad_planner_liquid.html
+   http://YOUR-MAC-IP:8080/
    ```
 
 3. Wait a few seconds for the page to load. A small floating card will appear at the bottom telling you to tap **Share → Add to Home Screen**.
@@ -34,7 +34,7 @@ Repeat steps 2–4 on each phone while they're on your Wi-Fi. Each phone keeps i
 
 ## To put it permanently online (so anyone can install from anywhere)
 
-Push the folder to GitHub and turn on GitHub Pages (we walked through this earlier). Then your install URL becomes `https://chandpravin-cyber.github.io/prasad-menu/prasad_planner_liquid.html` — no Mac needed.
+Push the folder to GitHub and turn on GitHub Pages (we walked through this earlier). Then your install URL becomes `https://chandpravin-cyber.github.io/Prasad/` — no Mac needed.
 
 ## Updating the app
 
