@@ -877,6 +877,28 @@
     .modal-cancel { background: rgba(60,40,28,0.55); color: var(--text-soft); }
     .url-row { background: rgba(40,28,20,0.55); border-color: rgba(255,255,255,0.18); }
     .url-text { color: #8FC8FF; }
+
+    /* Dark-mode contrast fixes for added elements */
+    .dish-search {
+      background: rgba(20, 14, 10, 0.62);
+      color: var(--text);
+      border-color: rgba(255,255,255,0.20);
+    }
+    .dish-search::placeholder { color: var(--muted); }
+    .dish-search:focus {
+      background: rgba(20, 14, 10, 0.85);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(0,180,216,0.22);
+    }
+    .quick-btn {
+      background: rgba(255,255,255,0.08);
+      color: #8FC8FF;
+      border-color: rgba(143,200,255,0.40);
+    }
+    .quick-btn.solid { color: #fff; }   /* keep gradient + white text */
+    .hero-status { color: var(--text-soft); }
+    .hero-status b { color: #8FC8FF; }
+    .search-empty { color: var(--text-soft); }
   }
 
   /* Default visibility helpers */
